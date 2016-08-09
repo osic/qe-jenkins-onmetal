@@ -1,0 +1,14 @@
+---
+- name: Prepare OnMetal Host
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: "Check if host is setup"
+      stat: path=/root/.hostsetup
+      register: hostsetup
+
+    - name: "Run Host Setup"
+      command: bash /root/rpcops-onmetal-labconfigurator/rpcops-host-setup
+      async: 3600
+      poll: 10
+      when: hostsetup.stat.exists == False

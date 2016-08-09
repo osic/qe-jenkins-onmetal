@@ -1,0 +1,29 @@
+---
+
+- name: "Create Lab Environment"
+  hosts: all
+  remote_user: root
+
+  tasks:
+    - name: "Check for existing lab"
+      stat: path=/root/.labconfig
+      register: labrunning
+
+    - name: "Spawn Lab"
+      command: bash /root/rpcops-onmetal-labconfigurator/rpcops-lab-setup
+      async: 3600
+      poll: 10
+      when: labrunning.stat.exists == False
+      register: labcreated
+
+    - name: "Prepare Cinder Storage"
+      command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml chdir=/root/rpcops-onmetal-labconfigurator
+      when: ! labcreated|skipped
+
+    - name: "Prepare Swift Storage"
+      command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml chdir=/root/rpcops-onmetal-labconfigurator
+      when: ! labcreated|skipped
+
+    - name: "Prepare VMs for OpenStack-Ansible"
+      command: ansible-playbook -i inventory playbooks/pre-openstack-install.yml chdir=/root/rpcops-onmetal-labconfigurator
+      when: ! labcreated|skipped

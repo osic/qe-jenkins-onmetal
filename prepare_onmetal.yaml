@@ -1,0 +1,26 @@
+---
+
+- name: Prepare OnMetal Host
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: "Install preliminary packages"
+      apt:
+        name: git
+        update_cache: yes
+        state: latest
+        autoremove: yes
+
+    - name: "Check for existing repo"
+      stat: path=/root/rpcops-onmetal-labconfigurator
+      register: repostatus
+
+    - name: "Clone Github Repository"
+      git:
+        repo: http://github.com/mrhillsman/rpcops-onmetal-labconfigurator
+        accept_hostkey: yes
+        clone: yes
+        dest: /root/rpcops-onmetal-labconfigurator
+        recursive: yes
+        version: master
+      when: repostatus.stat.exists == False

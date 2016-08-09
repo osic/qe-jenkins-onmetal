@@ -1,0 +1,5 @@
+---
+# should have tags here that allow for:
+# clean which is complete rekick
+# preosa which is remove all openstack
+# postosa which is after openstack-ansible install
