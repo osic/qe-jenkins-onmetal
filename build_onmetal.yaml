@@ -1,0 +1,100 @@
+---
+#api_key: f44d1726e6614cf39ef8fdc3e8fbf3d3
+- name: Build OnMetal Lab Host
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Create DFW Keypair"
+      local_action:
+        module: rax_keypair
+        credentials: './.raxpub'
+        name: osic-qa-key
+        region: DFW
+        public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      register: osic-qa-key-dfw
+      tags:
+        - dfw
+
+    - name: "Create IAD Keypair"
+      local_action:
+        module: rax_keypair
+        credentials: './.raxpub'
+        name: osic-qa-key
+        region: IAD
+        public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      register: osic-qa-key-iad
+      tags:
+        - iad
+
+    - name: "Server Build Request - DFW"
+      local_action:
+        module: rax
+        credentials: './.raxpub'
+        name: osic-qa-build-dfw
+        flavor: onmetal-io2
+        image: 9dc2bf0a-7771-45cd-a7f9-ce86ce94c548
+        key_name: osic-qa-key
+        wait: yes
+        state: present
+        region: DFW
+        exact_count: yes
+        count: 1
+        group: osic-qa-dfw
+      register: osic-qa-build-dfw
+      tags:
+        - dfw
+
+    - name: "Server Build Request - IAD"
+      local_action:
+        module: rax
+        credentials: './.raxpub'
+        name: osic-qa-build-iad
+        flavor: onmetal-io2
+        image: 9dc2bf0a-7771-45cd-a7f9-ce86ce94c548
+        key_name: osic-qa-key
+        wait: yes
+        state: present
+        region: IAD
+        exact_count: yes
+        count: 1
+        group: osic-qa-iad
+      register: osic-qa-build-iad
+      tags:
+        - iad
+
+    - name: "Remove current hosts file"
+      local_action:
+        module: file
+        path: ./hosts
+        state: absent
+      tags:
+        - always
+
+    - name: "Create hosts file"
+      local_action:
+        module: file
+        path: ./hosts
+        state: touch
+      tags:
+        - always
+
+    - name: "Add server to hosts file - DFW"
+      local_action:
+        module: lineinfile
+        dest: hosts
+        create: yes
+        state: present
+        line: osic-qa-build-dfw1
+      tags:
+        - dfw
+
+    - name: "Add server to hosts file - IAD"
+      local_action:
+        module: lineinfile
+        dest: hosts
+        create: yes
+        state: present
+        line: osic-qa-build-iad1
+      tags:
+        - iad

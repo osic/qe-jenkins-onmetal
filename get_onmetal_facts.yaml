@@ -1,0 +1,52 @@
+---
+#api_key: f44d1726e6614cf39ef8fdc3e8fbf3d3
+- name: Get OnMetal Host Facts
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: "Generate Facts - DFW"
+      local_action:
+        module: rax_facts
+        credentials: './.raxpub'
+        name: osic-qa-build-dfw1
+        region: DFW
+      tags:
+        - dfw
+      register: osicqabuilddfw
+
+    - name: "Generate Facts - IAD"
+      local_action:
+        module: rax_facts
+        credentials: './.raxpub'
+        name: osic-qa-build-iad1
+        region: IAD
+      tags:
+        - iad
+      register: osicqabuildiad
+
+    - name: "Set Facts - DFW"
+      set_fact:
+        host_name: "{{ osicqabuilddfw.ansible_facts.name }}"
+        host_address: "{{ osicqabuilddfw.ansible_facts.rax_accessipv4 }}"
+        host_region: "DFW"
+      tags:
+        - dfw
+
+    - name: "Set Facts - IAD"
+      set_fact:
+        host_name: "{{ osicqabuildiad.ansible_facts.name }}"
+        host_address: "{{ osicqabuildiad.ansible_facts.rax_accessipv4 }}"
+        host_region: "IAD"
+      tags:
+        - iad
+
+    - name: "Add IP address to hosts - DFW"
+      local_action:
+        module: lineinfile
+        dest: ./hosts
+        backrefs: True
+        state: present
+        regexp: osic-qa-build
+        line: '{{ inventory_hostname }} ansible_ssh_host={{ host_address }}'
+      tags:
+        - always
