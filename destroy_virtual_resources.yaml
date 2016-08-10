@@ -1,8 +1,9 @@
 ---
-  
+
 - name: "Destroy OnMetal Lab"
   hosts: all
   remote_user: root
+  gather_facts: false
 
   vars:
     libvirt_host: "qemu+ssh://{{ ansible_ssh_host }}/system?socket=/var/run/libvirt/libvirt-sock"
