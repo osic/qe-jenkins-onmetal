@@ -18,10 +18,10 @@
       when: cpustatus.stat.exists == False
 
 # Luz said Jenkins can handle this, leaving for contingency
-- name: "Wait for SSH"
-  local_action:
-    module: wait_for
-    host: "{{ ansible_ssh_host }}"
-    port: 22
-    state: started
-  sudo: false
+    - name: "Wait for SSH"
+      local_action:
+        module: wait_for
+        host: "{{ ansible_ssh_host }}"
+        port: 22
+        state: started
+      sudo: false
