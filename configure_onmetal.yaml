@@ -1,4 +1,5 @@
 ---
+  
 - name: Prepare OnMetal Host
   hosts: all
   remote_user: root
@@ -12,11 +13,13 @@
       async: 1200
       poll: 0
       register: setuphost
-      when: hostsetup.stat.exists == False
+      when: hostsetup.stat.exists == false
 
     - name: "Check on Host Setup"
-      async_status: jid={{ setuphost.ansible_job_id }}
+      async_status:
+        jid: "{{ setuphost.ansible_job_id }}"
       register: setupdone
-      until: setuphost.finished
+      until: setupdone.finished
       retries: 120
       delay: 10
+      when: setuphost.ansible_job_id is defined
