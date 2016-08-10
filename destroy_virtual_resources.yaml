@@ -1,9 +1,5 @@
 ---
-# this will completely destroy the lab
-# and delete the onmetal host
-# and also remove the ssh keypair
-# basically remove everything
-
+  
 - name: "Destroy OnMetal Lab"
   hosts: all
   remote_user: root
@@ -58,4 +54,4 @@
         name: "{{ item }}"
         command: undefine
         uri: "{{ libvirt_host }}"
-      with_items: "{{ nets.list_nets }}"    
+      with_items: "{{ nets.list_nets }}"
