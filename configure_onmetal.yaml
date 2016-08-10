@@ -17,6 +17,6 @@
     - name: "Check on Host Setup"
       async_status: jid={{ setuphost.ansible_job_id }}
       register: setupdone
-      until: setupdone.finished
+      until: setuphost.finished
       retries: 120
       delay: 10
