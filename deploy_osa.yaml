@@ -1,1 +1,15 @@
 ---
+
+- name: "Deploy OpenStack-Ansible"
+  hosts: all
+  remote_user: root
+
+  tasks:
+    - name: "Prepare Swift Disks"
+      command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
+
+    - name: "Prepare Cinder Disks"
+      command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml
+
+    - name: "Prepare OpenStack-Ansible"
+      command: ansible-playbook -i inventory playbooks/pre-openstack-install.yml -e "openstack_release='stable/mitaka'"
