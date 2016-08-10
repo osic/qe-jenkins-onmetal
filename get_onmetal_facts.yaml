@@ -53,15 +53,15 @@
         module: lineinfile
         dest: ./hosts
         state: present
-        line: '{{ host_name_dfw }} ansible_ssh_host={{ host_address_dfw }}'
+        line: 'dfw ansible_ssh_host={{ host_address_dfw }}'
       tags:
         - always
-    
+
     - name: "Add IP address to hosts - IAD"
       local_action:
         module: lineinfile
         dest: ./hosts
         state: present
-        line: '{{ host_name_iad }} ansible_ssh_host={{ host_address_iad }}'
+        line: 'iad ansible_ssh_host={{ host_address_iad }}'
       tags:
         - always
