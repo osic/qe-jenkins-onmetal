@@ -36,6 +36,7 @@
         image: 9dc2bf0a-7771-45cd-a7f9-ce86ce94c548
         key_name: osic-qa-key
         wait: yes
+        wait_timeout: 600
         state: present
         region: DFW
         exact_count: yes
@@ -54,6 +55,7 @@
         image: 9dc2bf0a-7771-45cd-a7f9-ce86ce94c548
         key_name: osic-qa-key
         wait: yes
+        wait_timeout: 600
         state: present
         region: IAD
         exact_count: yes
