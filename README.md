@@ -24,7 +24,7 @@ ansible-playbook setup_jenkins.yaml
 ansible-playbook build_onmetal.yaml --tags 'iad'
 
 # Confirmed
-ansible-playbook -i hosts get_onmetal_facts.yaml
+ansible-playbook -i hosts get_onmetal_facts.yaml --tags 'iad'
 
 # Confirmed
 ansible-playbook -i hosts prepare_onmetal.yaml
