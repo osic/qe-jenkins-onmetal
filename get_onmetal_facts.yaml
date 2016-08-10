@@ -46,7 +46,6 @@
         content: ""
         dest: ./hosts
         force: yes
-#        mode: 0777
 
     - name: "Add IP address to hosts - DFW"
       local_action:
