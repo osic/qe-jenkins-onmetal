@@ -40,17 +40,10 @@
       tags:
         - iad
 
-    - name: "Delete hosts file"
+    - name: "Re-create hosts file"
       local_action:
-        module: file
-        path: ./hosts
-        state: absent
-
-    - name: "Create hosts file"
-      local_action:
-        module: file
-        path: ./hosts
-        state: touch
+        module: command
+        args: 'rm -f ./hosts && touch ./host'
 
     - name: "Add IP address to hosts - DFW"
       local_action:
