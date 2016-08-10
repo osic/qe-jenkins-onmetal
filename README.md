@@ -49,13 +49,13 @@ ansible-playbook setup_jenkins.yaml
 
 ##### Manual Workflow
 ```shell
-# Launch OnMetal host and Lab
+# Launch OnMetal host and Lab - Confirmed
 ansible-playbook launch_phase.yaml
 
-# Deploy Openstack-Ansible
+# Deploy Openstack-Ansible - NOT Confirmed
 ansible-playbook deploy_phase.yaml
 
-# Destroy OnMetal host and Lab
+# Destroy OnMetal host and Lab - Confirmed
 ansible-playbook destroy_phase.yaml
 ```
 
