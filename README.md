@@ -6,6 +6,8 @@ Packages (will add more and remove this comment when finalized):
 + ansible >= 2.0
 + lxml (pip)
 
+SSH KeyPair: /root/.ssh/id_rsa /root/.ssh/id_rsa.pub
+
 ## Current Workflow
 #### Optional
 ```shell
