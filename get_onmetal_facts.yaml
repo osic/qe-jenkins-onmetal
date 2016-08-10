@@ -54,7 +54,7 @@
         state: present
         line: 'dfw ansible_ssh_host={{ host_address_dfw }}'
       tags:
-        - always
+        - dfw
 
     - name: "Add IP address to hosts - IAD"
       local_action:
@@ -63,4 +63,4 @@
         state: present
         line: 'iad ansible_ssh_host={{ host_address_iad }}'
       tags:
-        - always
+        - iad
