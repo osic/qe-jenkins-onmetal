@@ -1,2 +1,2 @@
-osic-qa-build-dfw1
-osic-qa-build-dfw1 ansible_ssh_host=172.99.84.254
+osic-qa-build-dfw1 ansible_ssh_host=65.61.151.14
+osic-qa-build-iad1 ansible_ssh_host=172.99.84.254

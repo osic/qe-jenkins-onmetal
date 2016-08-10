@@ -3,14 +3,24 @@
 - name: Fix OnMetal CPU
   hosts: all
   remote_user: root
+  gather_facts: false
   tasks:
     - name: "Check for CPU fix"
       stat: path=/root/.cpufixed
       register: cpustatus
 
     - name: "Fix CPU Usage Bug"
-      command: bash /root/rpcops-onmetal-labconfigurator/rpcops-host-setup
-      async: 2
+      script: ./cpufix.sh
+      async: 0
       poll: 0
+      ignore_errors: true
       register: cpufix
       when: cpustatus.stat.exists == False
+
+    - name: "Wait for SSH"
+      local_action:
+        module: wait_for
+        host: "{{ ansible_ssh_host }}"
+        port: 22
+        state: started
+      sudo: false    
