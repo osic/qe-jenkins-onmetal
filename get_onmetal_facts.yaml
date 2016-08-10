@@ -40,27 +40,32 @@
       tags:
         - iad
 
-    - name: "Empty contents of hosts"
+    - name: "Delete hosts file"
       local_action:
-        module: copy
-        content: ""
-        dest: ./hosts
-        force: yes
+        module: file
+        path: ./hosts
+        state: absent
+
+    - name: "Create hosts file"
+      local_action:
+        module: file
+        path: ./hosts
+        state: touch
 
     - name: "Add IP address to hosts - DFW"
       local_action:
-        module: replace
-        regex: osic-qa-build-dfw
+        module: lineinfile
         dest: ./hosts
-        replace: 'dfw ansible_ssh_host={{ host_address_dfw }}'
+        state: present
+        line: 'dfw ansible_ssh_host={{ host_address_dfw }}'
       tags:
         - dfw
 
     - name: "Add IP address to hosts - IAD"
       local_action:
-        module: replace
-        regex: osic-qa-build-iad
+        module: lineinfile
         dest: ./hosts
-        replace: 'iad ansible_ssh_host={{ host_address_iad }}'
+        state: present
+        line: 'iad ansible_ssh_host={{ host_address_iad }}'
       tags:
         - iad
