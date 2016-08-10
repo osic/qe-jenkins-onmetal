@@ -40,10 +40,12 @@
       tags:
         - iad
 
-    - name: "Re-create hosts file"
+    - name: "Empty contents of hosts"
       local_action:
-        module: command
-        args: 'rm -f ./hosts && touch ./host'
+        module: copy
+        content: ""
+        dest: ./hosts
+        force: yes
       tags:
         - always
 
