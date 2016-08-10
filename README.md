@@ -47,6 +47,18 @@ ansible-playbook setup_master.yaml
 ansible-playbook setup_jenkins.yaml
 ```
 
+##### Manual Workflow
+```shell
+# Launch OnMetal host and Lab
+ansible-playbook launch_phase.yaml
+
+# Deploy Openstack-Ansible
+ansible-playbook deploy_phase.yaml
+
+# Destroy OnMetal host and Lab
+ansible-playbook destroy_phase.yaml
+```
+
 ##### Jenkins Pipeline (I think that is the right jargon)  
 tags available are _iad_ and _dfw_, **without** tags resources are created in **both** regions
 ```shell
