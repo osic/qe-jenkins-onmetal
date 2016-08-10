@@ -33,4 +33,4 @@
 
       - name: "Prepare VMs for OpenStack-Ansible"
         command: ansible-playbook -i inventory playbooks/pre-openstack-install.yml chdir=/root/rpcops-onmetal-labconfigurator
-    when: labdone.finished
+      when: labdone.finished
