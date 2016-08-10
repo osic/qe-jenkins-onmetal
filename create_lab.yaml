@@ -12,9 +12,16 @@
     - name: "Spawn Lab"
       command: bash /root/rpcops-onmetal-labconfigurator/rpcops-lab-setup
       async: 3600
-      poll: 10
-      when: labrunning.stat.exists == False
+      poll: 0
       register: labcreated
+      when: labrunning.stat.exists == False
+
+    - name: "Wait for Lab creation"
+      async_status: jid={{ labcreated.ansible_job_id }}
+      register: labdone
+      until: labdone.finished
+      retries: 120
+      delay: 10
 
     - name: "Prepare Cinder Storage"
       command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml chdir=/root/rpcops-onmetal-labconfigurator
