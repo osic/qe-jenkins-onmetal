@@ -49,18 +49,18 @@
 
     - name: "Add IP address to hosts - DFW"
       local_action:
-        module: lineinfile
+        module: replace
+        regex: osic-qa-build-dfw
         dest: ./hosts
-        state: present
-        line: 'dfw ansible_ssh_host={{ host_address_dfw }}'
+        replace: 'dfw ansible_ssh_host={{ host_address_dfw }}'
       tags:
         - dfw
 
     - name: "Add IP address to hosts - IAD"
       local_action:
-        module: lineinfile
+        module: replace
+        regex: osic-qa-build-iad
         dest: ./hosts
-        state: present
-        line: 'iad ansible_ssh_host={{ host_address_iad }}'
+        replace: 'iad ansible_ssh_host={{ host_address_iad }}'
       tags:
         - iad
