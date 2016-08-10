@@ -31,12 +31,16 @@
       local_action:
         module: rax
         credentials: './.raxpub'
-        name: osic-qa-build-dfw1
+        name: osic-qa-build-dfw
         flavor: onmetal-io2
         image: 9dc2bf0a-7771-45cd-a7f9-ce86ce94c548
+        key_name: osic-qa-key
         wait: yes
-        state: absent
-        region: DFW
+        state: present
+        region: IAD
+        exact_count: yes
+        count: 0
+        group: osic-qa-dfw
       register: osic-qa-build-dfw
       tags:
         - dfw
@@ -45,12 +49,16 @@
       local_action:
         module: rax
         credentials: './.raxpub'
-        name: osic-qa-build-iad1
+        name: osic-qa-build-iad
         flavor: onmetal-io2
         image: 9dc2bf0a-7771-45cd-a7f9-ce86ce94c548
+        key_name: osic-qa-key
         wait: yes
-        state: absent
+        state: present
         region: IAD
+        exact_count: yes
+        count: 0
+        group: osic-qa-iad
       register: osic-qa-build-iad
       tags:
         - iad
