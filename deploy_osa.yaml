@@ -7,12 +7,18 @@
   tasks:
     - name: "Prepare Swift Disks"
       command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
+      args:
+        chdir: /root/rpcops-onmetal-labconfigurator
 
     - name: "Prepare Cinder Disks"
       command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml
+      args:
+        chdir: /root/rpcops-onmetal-labconfigurator
 
-    - name: "Prepare OpenStack-Ansible"
-      command: ansible-playbook -i inventory playbooks/pre-openstack-install.yml -e "openstack_release='stable/mitaka'"
+#    - name: "Prepare OpenStack-Ansible"
+#      command: ansible-playbook -i inventory playbooks/pre-openstack-install.yml -e "openstack_release='stable/mitaka'"
+#      args:
+#        chdir: /root/rpcops-onmetal-labconfigurator
 
   - name: Clone openstack-ansible
     git:
@@ -21,7 +27,7 @@
       clone: yes
       accept_hostkey: yes
       recursive: yes
-      version: "{{ openstack_release | default('liberty') }}"
+      version: "{{ openstack_release | default('master') }}"
     tags:
       - clone-openstack-ansible
 
@@ -75,7 +81,7 @@
 
   - name: Copy openstack_user_config.yml
     copy:
-      src: templates/openstack_user_config.yml
+      src: /root/rpcops-onmetal-labconfigurator/playbooks/templates/openstack_user_config.yml
       dest: /etc/openstack_deploy/openstack_user_config.yml
       owner: root
       group: root
@@ -85,7 +91,7 @@
 
   - name: Copy swift.yml
     copy:
-      src: templates/swift.yml
+      src: /root/rpcops-onmetal-labconfigurator/playbooks/templates/swift.yml
       dest: /etc/openstack_deploy/conf.d/swift.yml
       owner: root
       group: root
@@ -101,9 +107,17 @@
   - name: Wait for inventory to build
     pause: seconds=10
 
-  - name: Add containers to VPX loadbalancer
+  - name: Enable VPX login
     script: /root/rpcops-onmetal-labconfigurator/playbooks/scripts/vpx-login-setup.sh
     register: result
     failed_when: "result.stderr != ''"
     tags:
       - vpx-login-setup
+
+  - name: Add containers to VPX
+    command: /root/rpcops-onmetal-labconfigurator/
+
+  - name: Run openstack-ansible deployment
+    command: openstack-ansible setup-everything.yml
+    args:
+      chdir: /opt/openstack-ansible/playbooks
