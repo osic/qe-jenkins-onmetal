@@ -23,14 +23,3 @@
       retries: 120
       delay: 10
       when: labcreated.ansible_job_id is defined
-
-    - block:
-      - name: "Prepare Cinder Storage"
-        command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml chdir=/root/rpcops-onmetal-labconfigurator
-
-      - name: "Prepare Swift Storage"
-        command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml chdir=/root/rpcops-onmetal-labconfigurator
-
-      - name: "Prepare VMs for OpenStack-Ansible"
-        command: ansible-playbook -i inventory playbooks/pre-openstack-install.yml chdir=/root/rpcops-onmetal-labconfigurator
-      when: labdone.finished
