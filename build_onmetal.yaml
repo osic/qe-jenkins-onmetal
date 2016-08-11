@@ -43,6 +43,7 @@
         count: 1
         group: osic-qa-dfw
       register: osic-qa-build-dfw
+      poll: 10
       tags:
         - dfw
 
@@ -62,6 +63,7 @@
         count: 1
         group: osic-qa-iad
       register: osic-qa-build-iad
+      poll: 10
       tags:
         - iad
 
