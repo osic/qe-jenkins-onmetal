@@ -23,3 +23,15 @@
       retries: 120
       delay: 10
       when: labcreated.ansible_job_id is defined
+
+    - name: "Prepare Swift Disks"
+      command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
+      args:
+        chdir: /root/rpcops-onmetal-labconfigurator
+      ignore_errors: yes
+
+    - name: "Prepare Cinder Disks"
+      command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml
+      args:
+        chdir: /root/rpcops-onmetal-labconfigurator
+      ignore_errors: yes
