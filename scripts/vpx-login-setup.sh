@@ -37,11 +37,11 @@ if ! [ $? -eq 0 ]; then
   empty -w -i output.fifo -o input.fifo ">" "exit\n"
 fi
 
-ssh -o BatchMode=yes nsroot@$__LBHOSTNAME__ 'exit'
+#ssh -o BatchMode=yes nsroot@$__LBHOSTNAME__ 'exit'
 
-if [ $? -eq 0 ]; then
-  ssh nsroot@10.5.0.4 <<EOF
-`bash /root/vpx-configurator`
-save config
-EOF
-fi
+#if [ $? -eq 0 ]; then
+#  ssh nsroot@10.5.0.4 <<EOF
+#`bash /root/vpx-configurator`
+#save config
+#EOF
+#fi
