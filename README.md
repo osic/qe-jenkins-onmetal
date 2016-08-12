@@ -24,7 +24,7 @@ api_key = e1b835d65f0311e6a36cbc764e00c842
   + libvirt-dev
   + jenkins
 + pip [ python <(curl -sk https://bootstrap.pypa.io/get-pip.py) ]
-  + ansible >= 2.0
+  + ansible == 1.9.4
   + lxml
   + pyrax
   + libvirt-python
