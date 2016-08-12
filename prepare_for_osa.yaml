@@ -3,6 +3,7 @@
 - name: "Deploy OpenStack-Ansible"
   hosts: all
   remote_user: root
+  serial: 1
 
   tasks:
     - name: Remove existing openstack-ansible
@@ -17,6 +18,13 @@
       tags:
         - remove-openstack-deploy
         - copy-openstack-deploy
+
+    - name: Remove ansible in opt
+      command: rm -rf ansible*
+      args:
+        chdir: /opt
+      tags:
+        - remove-ansible-in-opt
 
     - name: Clone openstack-ansible
       git:
@@ -77,6 +85,15 @@
       tags:
         - set-cinder-default-az
 
+    - name: Configure neutron L2 population
+      lineinfile:
+        dest: /etc/openstack_deploy/user_variables.yml
+        insertafter: EOF
+        state: present
+        line: "neutron_l2_population: True"
+      tags:
+        - set-neutron-l2-population
+
     - name: Copy openstack_user_config.yml
       copy:
         src: templates/openstack_user_config.yml
@@ -103,12 +120,12 @@
         - generate-inventory
 
     - name: Wait for inventory to build
-      pause: seconds=10
+      pause: seconds=5
 
     - name: Enable VPX login
       script: scripts/vpx-login-setup.sh
       register: result
-      failed_when: "result.stderr != ''"
+      failed_when: result.rc != 0
       tags:
         - vpx-login-setup
 
@@ -117,8 +134,6 @@
         ssh nsroot@10.5.0.4 <<EOF
         `bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-configurator`
         EOF
-
-    - name: Run openstack-ansible deployment
-      command: openstack-ansible setup-everything.yml
-      args:
-        chdir: /opt/openstack-ansible/playbooks
+      failed_when: result.rc != 0
+      tags:
+        - vpx-container-setup
