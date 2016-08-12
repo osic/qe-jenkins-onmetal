@@ -19,7 +19,7 @@ apt-get -y update
 apt-get -y upgrade
 apt-get install -y vim curl wget git
 apt-get install -y --force-yes build-essential libssl-dev python-dev pkg-config libvirt-dev libxml2-dev libxslt1-dev libpq-dev
-curl -sk https://bootstrap.pypa.io/get-pip.py
+curl -sk https://bootstrap.pypa.io/get-pip.py | python
 pip install ansible>=2.0
 pip install pyrax
 pip install libvirt-python
