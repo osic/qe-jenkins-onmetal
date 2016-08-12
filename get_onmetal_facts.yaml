@@ -4,6 +4,10 @@
   hosts: all
   gather_facts: False
   tasks:
+
+    - name: "Give SSH a little more time"
+      pause: minutes=2
+
     - name: "Generate Facts - DFW"
       local_action:
         module: rax_facts

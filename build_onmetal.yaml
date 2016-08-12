@@ -102,6 +102,3 @@
         line: osic-qa-build-iad1
       tags:
         - iad
-
-    - name: "Give SSH a little more time"
-      pause: minutes=2
