@@ -1,5 +1,5 @@
 ---
-#api_key: f44d1726e6614cf39ef8fdc3e8fbf3d3
+
 - name: Build OnMetal Lab Host
   hosts: localhost
   connection: local
