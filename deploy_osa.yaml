@@ -25,7 +25,7 @@
         clone: yes
         accept_hostkey: yes
         recursive: yes
-        version: "{{ openstack_release | default('master') }}"
+        version: "{{ openstack_release | default('stable/mitaka') }}"
       tags:
         - clone-openstack-ansible
 
