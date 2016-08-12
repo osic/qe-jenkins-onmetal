@@ -1,0 +1,73 @@
+---
+
+- name: "Run openstack-ansible Deployment"
+  become: yes
+  remote_user: root
+  hosts: all
+
+  tasks:
+    - name: "OpenStack Hosts Setup"
+      script: scripts/01-openstack-hosts-setup
+
+    - name: "Security Hardening"
+      script: scripts/02-security-hardening
+
+    - name: "LXC Hosts Setup"
+      script: scripts/03-lxc-hosts-setup
+
+    - name: "LXC Containers Create"
+      script: scripts/04-lxc-containers-create
+
+    - name: "HAProxy Install"
+      script: scripts/05-haproxy-install
+
+    - name: "Memcached Install"
+      script: scripts/06-memcached-install
+
+    - name: "Repo Install"
+      script: scripts/07-repo-install
+
+    - name: "Galera Install"
+      script: scripts/08-galera-install
+
+    - name: "RabbitMQ Install"
+      script: scripts/09-rabbitmq-install
+
+    - name: "Utility Install"
+      script: scripts/10-utility-install
+
+    - name: "rsyslog Install"
+      script: scripts/11-rsyslog-install
+
+    - name: "OS Keystone Install"
+      script: scripts/12-os-keystone-install
+
+    - name: "OS Glance Install"
+      script: scripts/13-os-glance-install
+
+    - name: "OS Cinder Install"
+      script: scripts/14-os-cinder-install
+
+    - name: "OS Nova Install"
+      script: scripts/15-os-nova-install
+
+    - name: "OS Neutron Install"
+      script: scripts/16-os-neutron-install
+
+    - name: "OS Heat Install"
+      script: scripts/17-os-heat-install
+
+    - name: "OS Horizon Install"
+      script: scripts/18-os-horizon-install
+
+    - name: "OS Ceilometer Install"
+      script: scripts/19-os-ceilometer-install
+
+    - name: "OS Aodh Install"
+      script: scripts/20-os-aodh-install
+
+    - name: "OS Swift Install"
+      script: scripts/21-os-swift-install
+
+    - name: "OS Ironic Install"
+      script: scripts/22-os-ironic-install
