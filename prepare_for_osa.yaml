@@ -125,7 +125,7 @@
     - name: Enable VPX login
       script: scripts/vpx-login-setup.sh
       register: result
-      failed_when: result.rc != 0
+      failed_when: result.stderr != ''
       tags:
         - vpx-login-setup
 
