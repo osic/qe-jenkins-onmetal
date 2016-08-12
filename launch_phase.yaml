@@ -1,12 +1,14 @@
 ---
 
 - name: "Automation Launcher"
+  hosts: localhost
+  connection: local
   tasks:
     - name: "Build OnMetal Server"
-      command: ansible-playbook build_onmetal.yaml --tags 'iad'
+      command: ansible-playbook build_onmetal.yaml --tags {{ region }}
 
     - name: "Get OnMetal Facts"
-      command: ansible-playbook -i hosts get_onmetal_facts.yaml --tags 'iad'
+      command: ansible-playbook -i hosts get_onmetal_facts.yaml --tags {{ region }}
 
     - name: "Prep OnMetal Server"
       command: ansible-playbook -i hosts prepare_onmetal.yaml
