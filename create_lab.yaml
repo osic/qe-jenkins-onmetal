@@ -20,9 +20,12 @@
       async_status: jid={{ labcreated.ansible_job_id }}
       register: labdone
       until: labdone.finished
-      retries: 120
+      retries: 240
       delay: 10
       when: labcreated.ansible_job_id is defined
+
+    - name: "Give nodes another minute"
+      pause: seconds=60
 
     - name: "Prepare Swift Disks"
       command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
