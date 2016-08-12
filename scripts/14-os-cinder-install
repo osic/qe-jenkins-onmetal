@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /opt/openstack-ansible/playbooks
+openstack-ansible os-cinder-install.yml
