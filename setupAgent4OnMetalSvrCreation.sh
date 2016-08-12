@@ -24,12 +24,16 @@ pip install ansible>=2.0
 pip install pyrax
 pip install libvirt-python
 
-
 curl https://ec4a542dbf90c03b9f75-b342aba65414ad802720b41e8159cf45.ssl.cf5.rackcdn.com/1.2/Linux/amd64/rack -o /usr/local/bin/rack
 chmod +x /usr/local/bin/rack
-ssh-keygen -t rsa -b 4096 -q -N '' -f ~/.ssh/id_rsa
 
-git clone https://github.com/osic/qa-jenkins-onmetal
+if [ ! -f ~/.ssh/id_rsa ]; then
+    ssh-keygen -t rsa -b 4096 -q -N '' -f ~/.ssh/id_rsa
+fi
+
+if [ ! -d qa-jenkins-onmetal ]; then
+    git clone https://github.com/osic/qa-jenkins-onmetal
+fi
 
 if [[ -z "${1}" || -z "${2}"  ]]; then
     raxusername="rax_username"
