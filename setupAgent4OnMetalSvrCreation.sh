@@ -9,6 +9,12 @@
 # {1} - raxusername
 # {2} - rax api key
 
+# Ensure script is run as root
+if [ "$EUID" -ne "0" ]; then
+  echo "$(date +"%F %T.%N") ERROR : This script must be run as root." >&2
+  exit 1
+fi
+
 apt-get -y update
 apt-get -y upgrade
 apt-get install -y vim curl wget git
