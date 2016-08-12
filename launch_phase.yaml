@@ -10,6 +10,9 @@
     - name: "Get OnMetal Facts"
       command: ansible-playbook -i hosts get_onmetal_facts.yaml --tags {{ region }}
 
+    - name: "Give SSH a little more time"
+      pause: minutes=2
+
     - name: "Prep OnMetal Server"
       command: ansible-playbook -i hosts prepare_onmetal.yaml
 
