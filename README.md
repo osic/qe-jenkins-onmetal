@@ -68,6 +68,9 @@ ansible-playbook -i hosts configure_onmetal.yaml
 # Confirmed
 ansible-playbook -i hosts create_lab.yaml
 
+# Confirmed
+ansible-playbook -i hosts prepare_for_osa.yaml
+
 # NOT Confirmed
 ansible-playbook -i hosts deploy_osa.yaml
 
