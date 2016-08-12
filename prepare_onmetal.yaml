@@ -5,6 +5,9 @@
   remote_user: root
   gather_facts: false
   tasks:
+    - name: "Give SSH some time"
+      pause: seconds=60
+      
     - name: "Install preliminary packages"
       apt:
         name: git
