@@ -6,21 +6,26 @@
   tasks:
     - name: "Build OnMetal Server"
       command: ansible-playbook build_onmetal.yaml --tags {{ region }}
+      poll: 10
 
     - name: "Get OnMetal Facts"
       command: ansible-playbook -i hosts get_onmetal_facts.yaml --tags {{ region }}
 
     - name: "Give SSH a little more time"
-      pause: minutes=3
+      pause: minutes=1
 
     - name: "Prep OnMetal Server"
       command: ansible-playbook -i hosts prepare_onmetal.yaml
+      poll: 10
 
     - name: "Configure CPU Usage"
       command: ansible-playbook -i hosts set_onmetal_cpu.yaml
+      poll: 10
 
     - name: "Setup OnMetal Server for Lab"
       command: ansible-playbook -i hosts configure_onmetal.yaml
+      poll: 10
 
     - name: "Create lab"
       command: ansible-playbook -i hosts create_lab.yaml
+      poll: 10
