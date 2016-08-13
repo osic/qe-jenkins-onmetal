@@ -1,0 +1,30 @@
+---
+
+- name: "Destroy Lab Networks"
+  hosts: all
+  remote_user: root
+  gather_facts: false
+
+  vars:
+    libvirt_host: "qemu+ssh://{{ ansible_ssh_host }}/system?socket=/var/run/libvirt/libvirt-sock"
+
+  tasks:
+    - name: "Register all networks"
+      virt_net:
+        command: list_nets
+        uri: "{{ libvirt_host }}"
+      register: nets
+
+    - name: "Stop all networks"
+      virt_net:
+        name: "{{ item }}"
+        state: inactive
+        uri: "{{ libvirt_host }}"
+      with_items: "{{ nets.list_nets }}"
+
+    - name: "Remove all networks"
+      virt_net:
+        name: "{{ item }}"
+        command: undefine
+        uri: "{{ libvirt_host }}"
+      with_items: "{{ nets.list_nets }}"
