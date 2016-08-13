@@ -24,7 +24,7 @@ api_key = e1b835d65f0311e6a36cbc764e00c842
   + libvirt-dev
   + jenkins
 + pip [ python <(curl -sk https://bootstrap.pypa.io/get-pip.py) ]
-  + ansible == 1.9.4
+  + ansible >= 2.0
   + lxml
   + pyrax
   + libvirt-python
@@ -71,11 +71,17 @@ ansible-playbook -i hosts create_lab.yaml
 # Confirmed
 ansible-playbook -i hosts prepare_for_osa.yaml
 
-# NOT Confirmed
+# Confirmed
 ansible-playbook -i hosts deploy_osa.yaml
 
 # Confirmed
-ansible-playbook -i hosts destroy_virtual_resources.yaml
+ansible-playbook -i hosts destroy_virtual_machines.yaml
+
+# Confirmed
+ansible-playbook -i hosts destroy_virtual_networks.yaml
+
+# Confirmed
+ansible-playbook -i hosts destroy_lab_state_file.yaml
 
 # Confirmed
 ansible-playbook -i hosts destroy_onmetal.yaml --tags 'iad'
