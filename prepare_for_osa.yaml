@@ -94,6 +94,26 @@
       tags:
         - set-neutron-l2-population
 
+    # https://review.openstack.org/#/c/353633/
+    - name: Magnum breaks OSA fix
+      lineinfile:
+        dest: /etc/openstack_deploy/user_variables.yml
+        insertafter: EOF
+        state: present
+        line: "magnum_git_install_branch: stable/mitaka"
+      tags:
+        - fix-magnum-bug
+
+    # https://review.openstack.org/#/c/353633/
+    - name: Magnum breaks OSA fix
+      lineinfile:
+        dest: /etc/openstack_deploy/user_variables.yml
+        insertafter: EOF
+        state: present
+        line: "magnum_requirements_git_install_branch: stable/mitaka"
+      tags:
+        - fix-magnum-bug
+
     - name: Copy openstack_user_config.yml
       copy:
         src: templates/openstack_user_config.yml
