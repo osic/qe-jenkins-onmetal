@@ -56,3 +56,8 @@
         command: undefine
         uri: "{{ libvirt_host }}"
       with_items: "{{ nets.list_nets }}"
+
+    - name: "Delete lab config state file"
+      command: rm -f .labconfig
+      args:
+        chdir: /root
