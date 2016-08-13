@@ -26,15 +26,18 @@
 
     - name: "Give nodes another minute"
       pause: seconds=60
+      when: labrunning.stat.exists == False
 
     - name: "Prepare Swift Disks"
       command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
       args:
         chdir: /root/rpcops-onmetal-labconfigurator
       ignore_errors: yes
+      when: labrunning.stat.exists == False
 
     - name: "Prepare Cinder Disks"
       command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml
       args:
         chdir: /root/rpcops-onmetal-labconfigurator
       ignore_errors: yes
+      when: labrunning.stat.exists == False
