@@ -5,12 +5,24 @@
   remote_user: root
   gather_facts: false
   tasks:
-    - name: "Install preliminary packages"
+    - name: "Check port 22 is open"
+      local_action:
+        module: wait_for
+        host: "{{ ansible_ssh_host }}"
+        port: 22
+        state: started
+      become: false
+
+    - name: "Give SSH some time"
+      pause: seconds=60
+
+    - name: "Update apt cache"
+      command: apt-get update
+      
+    - name: "Install needed package(s)"
       apt:
         name: git
-        update_cache: yes
         state: latest
-        autoremove: yes
 
     - name: "Check for existing repo"
       stat: path=/root/rpcops-onmetal-labconfigurator

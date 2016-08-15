@@ -1,5 +1,5 @@
 ---
-#api_key: f44d1726e6614cf39ef8fdc3e8fbf3d3
+
 - name: Build OnMetal Lab Host
   hosts: localhost
   connection: local
@@ -43,6 +43,7 @@
         count: 1
         group: osic-qa-dfw
       register: osic-qa-build-dfw
+      poll: 10
       tags:
         - dfw
 
@@ -62,6 +63,7 @@
         count: 1
         group: osic-qa-iad
       register: osic-qa-build-iad
+      poll: 10
       tags:
         - iad
 

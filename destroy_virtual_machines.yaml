@@ -1,6 +1,6 @@
 ---
 
-- name: "Destroy OnMetal Lab"
+- name: "Destroy Lab Machines"
   hosts: all
   remote_user: root
   gather_facts: false
@@ -36,23 +36,3 @@
     - name: "Remove all storage devices"
       shell: "for a in `virsh vol-list --pool storage|awk '/infra|compute|storage|cinder|ceph|swift|object|logger|kolla/ { print $1 }'`; \
       do virsh vol-delete $a storage; done;"
-
-    - name: "Register all networks"
-      virt_net:
-        command: list_nets
-        uri: "{{ libvirt_host }}"
-      register: nets
-
-    - name: "Stop all networks"
-      virt_net:
-        name: "{{ item }}"
-        state: inactive
-        uri: "{{ libvirt_host }}"
-      with_items: "{{ nets.list_nets }}"
-
-    - name: "Remove all networks"
-      virt_net:
-        name: "{{ item }}"
-        command: undefine
-        uri: "{{ libvirt_host }}"
-      with_items: "{{ nets.list_nets }}"

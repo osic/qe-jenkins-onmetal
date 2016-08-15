@@ -10,7 +10,7 @@
 
     - name: "Run Host Setup"
       command: bash /root/rpcops-onmetal-labconfigurator/rpcops-host-setup
-      async: 1200
+      async: 2400
       poll: 0
       register: setuphost
       when: hostsetup.stat.exists == false
@@ -20,6 +20,6 @@
         jid: "{{ setuphost.ansible_job_id }}"
       register: setupdone
       until: setupdone.finished
-      retries: 120
+      retries: 180
       delay: 10
       when: setuphost.ansible_job_id is defined

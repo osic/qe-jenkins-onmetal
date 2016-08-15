@@ -37,7 +37,7 @@
         key_name: osic-qa-key
         wait: yes
         state: present
-        region: IAD
+        region: DFW
         exact_count: yes
         count: 0
         group: osic-qa-dfw

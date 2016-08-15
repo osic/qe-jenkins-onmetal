@@ -4,6 +4,7 @@
   hosts: all
   gather_facts: False
   tasks:
+
     - name: "Generate Facts - DFW"
       local_action:
         module: rax_facts

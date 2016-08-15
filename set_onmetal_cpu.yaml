@@ -10,7 +10,7 @@
       register: cpustatus
 
     - name: "Fix CPU Usage Bug"
-      script: ./cpufix.sh
+      script: scripts/cpufix.sh
       async: 0
       poll: 0
       ignore_errors: true
@@ -18,10 +18,13 @@
       when: cpustatus.stat.exists == False
 
 # Luz said Jenkins can handle this, leaving for contingency
-    - name: "Wait for SSH"
+    - name: "Check port 22 is open"
       local_action:
         module: wait_for
         host: "{{ ansible_ssh_host }}"
         port: 22
         state: started
       sudo: false
+
+    - name: "Give SSH more time"
+      pause: seconds=60

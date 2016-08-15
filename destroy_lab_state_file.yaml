@@ -1,0 +1,12 @@
+---
+
+- name: "Destroy Lab State File"
+  hosts: all
+  remote_user: root
+  gather_facts: false
+
+  tasks:
+    - name: "Delete lab config state file"
+      command: rm -f .labconfig
+      args:
+        chdir: /root

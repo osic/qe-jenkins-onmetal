@@ -47,18 +47,6 @@ ansible-playbook setup_master.yaml
 ansible-playbook setup_jenkins.yaml
 ```
 
-##### Manual Workflow
-```shell
-# Launch OnMetal host and Lab - Confirmed
-ansible-playbook launch_phase.yaml
-
-# Deploy Openstack-Ansible - NOT Confirmed
-ansible-playbook deploy_phase.yaml
-
-# Destroy OnMetal host and Lab - Confirmed
-ansible-playbook destroy_phase.yaml
-```
-
 ##### Jenkins Pipeline (I think that is the right jargon)  
 tags available are _iad_ and _dfw_, **without** tags resources are created in **both** regions
 ```shell
@@ -80,11 +68,20 @@ ansible-playbook -i hosts configure_onmetal.yaml
 # Confirmed
 ansible-playbook -i hosts create_lab.yaml
 
-# NOT Confirmed
+# Confirmed
+ansible-playbook -i hosts prepare_for_osa.yaml
+
+# Confirmed
 ansible-playbook -i hosts deploy_osa.yaml
 
 # Confirmed
-ansible-playbook -i hosts destroy_virtual_resources.yaml
+ansible-playbook -i hosts destroy_virtual_machines.yaml
+
+# Confirmed
+ansible-playbook -i hosts destroy_virtual_networks.yaml
+
+# Confirmed
+ansible-playbook -i hosts destroy_lab_state_file.yaml
 
 # Confirmed
 ansible-playbook -i hosts destroy_onmetal.yaml --tags 'iad'
