@@ -20,6 +20,7 @@
         name: "{{ item }}"
         state: destroyed
         uri:  "{{ libvirt_host }}"
+      when: item != "loadbalancer" and item != "firewall"
       with_items: "{{ vms.list_vms }}"
 
     - name: "Remove all snapshots"
@@ -31,6 +32,7 @@
         name: "{{ item }}"
         command: undefine
         uri: "{{ libvirt_host }}"
+      when: item != "loadbalancer" and item != "firewall"
       with_items: "{{ vms.list_vms }}"
 
     - name: "Remove all storage devices"
