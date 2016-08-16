@@ -142,12 +142,11 @@
     - name: Wait for inventory to build
       pause: seconds=5
 
-    - name: Enable VPX login
-      script: scripts/vpx-login-setup.sh
-      register: result
-      failed_when: result.stderr != ''
+    - name: Remove containers from VPX
+      command: bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-cleaner
+      failed_when: result.rc != 0
       tags:
-        - vpx-login-setup
+        - vpx-container-cleanup
 
     - name: Add containers to VPX
       shell: |
