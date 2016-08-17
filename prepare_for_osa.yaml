@@ -144,7 +144,6 @@
 
     - name: Remove containers from VPX
       command: bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-cleaner
-      failed_when: result.rc != 0
       tags:
         - vpx-container-cleanup
 
@@ -153,6 +152,5 @@
         ssh nsroot@10.5.0.4 <<EOF
         `bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-configurator`
         EOF
-      failed_when: result.rc != 0
       tags:
         - vpx-container-setup
