@@ -2,7 +2,7 @@
 
 cd /opt/openstack-ansible/playbooks
 
-MAX_RETRIES=5
+MAX_RETRIES=${MAX_RETRIES:-5}
 
 function successerator () {
   set +e
@@ -22,7 +22,7 @@ function successerator () {
   done
 
   # If max retries were hit, fail.
-  if [ #? -ne 0 && [ ${RETRY} -eq ${MAX_RETRIES} ]; then
+  if [ $? -ne 0 && [ ${RETRY} -eq ${MAX_RETRIES} ] ]; then
     echo -e "\n Hit maximum number of retries, giving up..\n"
     exit
   fi

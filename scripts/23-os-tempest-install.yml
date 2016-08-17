@@ -1,4 +1,0 @@
-#!/bin/bash
-
-cd /opt/openstack-ansible/playbooks
-openstack-ansible os-tempest-install.yml

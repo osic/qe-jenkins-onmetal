@@ -35,4 +35,4 @@ function successerator () {
   set -e
 }
 
-successerator openstack-ansible repo-install.yml
+successerator openstack-ansible os-tempest-install.yml
