@@ -1,7 +1,0 @@
----
-- include: build_onmetal.yaml
-- include: get_onmetal_facts.yaml
-- include: prepare_onmetal.yaml
-- include: set_onmetal_cpu.yaml
-- include: configure_onmetal.yaml
-- include: create_lab.yaml
