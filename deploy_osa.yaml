@@ -71,3 +71,6 @@
 
     - name: "OS Ironic Install"
       script: scripts/22-os-ironic-install
+
+    - name: "OS Tempest Install"
+      script: scripts/99-os-tempest-install
