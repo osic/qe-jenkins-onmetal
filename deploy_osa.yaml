@@ -9,8 +9,8 @@
     - name: "OpenStack Hosts Setup"
       script: scripts/01-openstack-hosts-setup
 
-    - name: "Security Hardening"
-      script: scripts/02-security-hardening
+#    - name: "Security Hardening"
+#      script: scripts/02-security-hardening
 
     - name: "LXC Hosts Setup"
       script: scripts/03-lxc-hosts-setup
@@ -60,17 +60,17 @@
     - name: "OS Horizon Install"
       script: scripts/18-os-horizon-install
 
-    - name: "OS Ceilometer Install"
-      script: scripts/19-os-ceilometer-install
+#    - name: "OS Ceilometer Install"
+#      script: scripts/19-os-ceilometer-install
 
-    - name: "OS Aodh Install"
-      script: scripts/20-os-aodh-install
+#    - name: "OS Aodh Install"
+#      script: scripts/20-os-aodh-install
 
     - name: "OS Swift Install"
       script: scripts/21-os-swift-install
 
-    - name: "OS Ironic Install"
-      script: scripts/22-os-ironic-install
+#    - name: "OS Ironic Install"
+#      script: scripts/22-os-ironic-install
 
     - name: "OS Tempest Install"
       script: scripts/99-os-tempest-install
