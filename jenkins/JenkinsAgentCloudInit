@@ -1,0 +1,25 @@
+#cloud-config
+
+packages:
+ - build-essential
+ - curl
+ - git
+ - libssl-dev 
+ - libffi-dev
+ - libxml2-dev 
+ - libxslt1-dev 
+ - libpq-dev
+ - libvirt-dev
+ - pkg-config
+ - python-dev
+ - python-pip
+ - vim
+ - wget
+
+runcmd:
+ - sudo sed -i "1i127.0.1.1 $(hostname)" /etc/hosts
+ - pip install ansible>=2.0
+ - pip install pyrax
+ - pip install libvirt-python
+ - curl https://ec4a542dbf90c03b9f75-b342aba65414ad802720b41e8159cf45.ssl.cf5.rackcdn.com/1.2/Linux/amd64/rack -o /usr/local/bin/rack
+ - chmod +x /usr/local/bin/rack
