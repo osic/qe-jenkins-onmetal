@@ -1,0 +1,9 @@
+---
+
+- name: Custom post deploy stuff
+  become: yes
+  remote_user: root
+
+  tasks:
+    - name: Get tempest.conf
+      shell: 'scp infra01_utility:/opt/tempest_untagged/etc/tempest.conf /var/backup'
