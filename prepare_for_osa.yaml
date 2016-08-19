@@ -142,6 +142,11 @@
     - name: Wait for inventory to build
       pause: seconds=5
 
+    - name: Add utility containers to OnMetal hosts
+      shell: "python /opt/openstack-ansible/scripts/inventory-manage.py -l|awk 'match($0, /(infra0._utility)/, m) { print $12 \" \" $2 \" \" m[1] }' >> /etc/hosts"
+      tags:
+        - add-utility-to-onmetal
+
     - name: Remove containers from VPX
       command: bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-cleaner
       tags:
