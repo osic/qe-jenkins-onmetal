@@ -1,0 +1,43 @@
+---
+
+- name: "Create Lab Network Machines"
+  hosts: all
+  remote_user: root
+
+  tasks:
+    - name: "Check for existing lab"
+      stat: path=/root/.labconfig
+      register: labrunning
+
+    - name: "Copy Network Machines"
+      command: 
+      async: 3600
+      poll: 0
+      register: labcreated
+      when: labrunning.stat.exists == False
+
+    - name: "Wait for Lab creation"
+      async_status: jid={{ labcreated.ansible_job_id }}
+      register: labdone
+      until: labdone.finished
+      retries: 240
+      delay: 10
+      when: labcreated.ansible_job_id is defined
+
+    - name: "Give nodes another minute"
+      pause: seconds=60
+      when: labrunning.stat.exists == False
+
+    - name: "Prepare Swift Disks"
+      command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
+      args:
+        chdir: /root/rpcops-onmetal-labconfigurator
+      ignore_errors: yes
+      when: labrunning.stat.exists == False
+
+    - name: "Prepare Cinder Disks"
+      command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml
+      args:
+        chdir: /root/rpcops-onmetal-labconfigurator
+      ignore_errors: yes
+      when: labrunning.stat.exists == False
