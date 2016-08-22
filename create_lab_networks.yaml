@@ -1,0 +1,152 @@
+---
+
+- name: "Create Lab Networks"
+  hosts: all
+  remote_user: root
+
+  tasks:
+    - name: "Check for existing lab"
+      stat: path=/root/.netconfig
+      register: netrunning
+
+    - name: "Check for and/or remove __HOST_BOND_INT__ variable"
+      lineinfile:
+        dest: /etc/environment
+        regexp: "^__HOST_BOND_INT__"
+        state: absent
+      when: netrunning.stat.exists == False
+
+    - name: "Check for and/or remove __HOST_IP__ variable"
+      lineinfile:
+        dest: /etc/environment
+        regexp: "^__HOST_IP__"
+        state: absent
+      when: netrunning.stat.exists == False
+
+    - name: "Create needed variables"
+      shell: |
+        declare -a __HOST_BOND_INT__
+        count=0
+        for i in `ip link list|grep -oP "(?<=\ )bond0\.[0-9]{3}(?=@bond0)"`
+          do __HOST_BOND_INT__[$count]=$i
+          (( count++ ))
+        done
+        __HOST_IP__=`ip addr show dev "${__HOST_BOND_INT__[0]}"|\
+        awk '/inet/ { split($2, ip, "/"); print ip[1]; exit }'`
+        echo "export __HOST_BOND_INT__=( ${__HOST_BOND_INT__[*]} )" >> /etc/environment
+        echo "export __HOST_IP__=${__HOST_IP__}" >> /etc/environment
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Generate drac00 network xml"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/networks
+        cat << EON > rpcops-drac00-net.xml
+        <network>
+          <name>drac00</name>
+          <forward dev='${__HOST_BOND_INT__[0]}' mode='nat'>
+            <nat>
+              <port start='1024' end='65535'/>
+            </nat>
+            <interface dev='${__HOST_BOND_INT__[0]}'/>
+          </forward>
+          <bridge name='virbr0' stp='off' delay='0'/>
+          <domain name='drac00'/>
+          <ip address='10.5.0.1' netmask='255.255.255.0'>
+          </ip>
+        </network>
+EON
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Generate public00 network xml"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/networks
+        cat << EON > rpcops-public00-net.xml
+        <network>
+          <name>public00</name>
+          <forward dev='${__HOST_BOND_INT__[0]}' mode='nat'>
+            <nat>
+              <port start='1024' end='65535'/>
+            </nat>
+            <interface dev='${__HOST_BOND_INT__[0]}'/>
+          </forward>
+          <bridge name='virbr2' stp='off' delay='0'/>
+          <domain name='public00'/>
+          <ip address='192.168.0.1' netmask='255.255.255.0'>
+          </ip>
+          <ip address='192.168.239.1' netmask='255.255.252.0'>
+          </ip>
+          <ip address='192.168.240.1' netmask='255.255.252.0'>
+          </ip>
+        </network>
+EON
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Generate snet00 network xml"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/networks
+        cat << EON > rpcops-snet00-net.xml
+        <network>
+          <name>snet00</name>
+          <forward dev='${__HOST_BOND_INT__[1]}' mode='nat'>
+            <nat>
+              <port start='1024' end='65535'/>
+            </nat>
+            <interface dev='${__HOST_BOND_INT__[1]}'/>
+          </forward>
+          <bridge name='virbr1' stp='off' delay='0'/>
+          <domain name='snet00'/>
+          <ip address='10.6.0.1' netmask='255.255.255.0'>
+          </ip>
+        </network>
+EON
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Define and start networks"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/networks
+        for i in rpcops-*-net.xml
+        do
+          virsh net-define $i
+        done
+
+        for i in `python -c 'import libvirt; conn=libvirt.open("qemu:///system"); print " ".join(conn.listDefinedNetworks())'`
+        do
+          virsh net-autostart $i
+          virsh net-start $i
+        done
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Create and start firewall VM"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/edgedevices
+        cp /labshare/templates/edgedevices/firewall.tar.gz /var/lib/libvirt/images
+        tar xzf /var/lib/libvirt/images/firewall.tar.gz -C /var/lib/libvirt/images
+        virsh define firewall.xml
+        virsh start firewall
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Create and start loadbalancer VM"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/edgedevices
+        cp /labshare/templates/edgedevices/loadbalancer.tar.gz /var/lib/libvirt/images
+        tar xzf /var/lib/libvirt/images/loadbalancer.tar.gz -C /var/lib/libvirt/images
+        virsh define loadbalancer.xml
+        virsh start loadbalancer
+      args:
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Create netconfig state file"
+      command: touch /root/.netconfig
