@@ -1,0 +1,100 @@
+#!/usr/bin/env groovy
+
+def osa, common
+String home = '/home/ubuntu/qa-jenkins-onmetal/'
+String onmetal_ip
+
+
+// *******************************
+stage 'Pre-Deployment'
+// *******************************
+
+echo 'Provisioning an onMetal server and preparing it to run OSA'
+node('onmetal-provisioner') {
+
+    // Load the external functions
+    fileLoader.withGit('https://github.com/CasJ/qa-jenkins-onmetal.git', 'master', null, '') {
+        common = fileLoader.load('jenkins/common.groovy');
+        osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
+    }
+
+    // Download the project repository
+    sh """
+    rm -rf ${home}
+    git clone https://github.com/osic/qa-jenkins-onmetal.git ${home}
+    cp /home/ubuntu/.raxpub ${home}.raxpub
+    """
+    
+    // Provision the onMetal host
+    onmetal_ip = osa.onmetal_provision(home)
+
+    // Provision the VMs in the onMetal host
+    osa.vm_provision(home)
+
+    // Prepare the VMs to run OpenStack
+    osa.vm_preparation_for_osa(home)
+
+}
+
+
+// *******************************
+stage 'Deployment'
+// *******************************
+
+echo 'Deploying OpenStack using OSA'
+node('onmetal-provisioner') {
+
+    // Deploy OpenStack with OSA
+    osa.deploy_openstack(home)
+    
+    // Install and configure Tempest on the onMetal host
+    osa.configure_tempest(onmetal_ip)
+    
+}
+
+
+// *******************************
+stage 'Post-Deployment Validation'
+// *******************************
+
+echo 'Validating the OpenStack deployment'
+node('onmetal-provisioner') {
+
+    // Run the tempest tests
+    osa.run_tempest_smoke_tests(onmetal_ip)
+
+}
+
+
+// *******************************
+stage 'Upgrade'
+// *******************************
+echo 'To be defined...'
+
+
+// *******************************
+stage 'Post-Upgrade Validation'
+// *******************************
+echo 'To be defined...'
+
+
+// *******************************
+stage 'Reporting'
+// *******************************
+echo 'To be defined'
+
+
+// *******************************
+stage 'Clean Up'
+// *******************************
+
+echo 'Deleting the onMetal host and its VMs'
+node('onmetal-provisioner') {
+
+    // Delete VMs
+    osa.delete_virtual_resources(home)
+    
+    // Delete the onMetal host
+    osa.delete_onmetal(home, onmetal_ip)
+
+}
