@@ -10,22 +10,33 @@ stage 'Pre-Deployment'
 // *******************************
 
 echo 'Provisioning an onMetal server and preparing it to run OSA'
+node('master') {
+    
+    // Copy the Rax key from the Jenkins master
+    dir('/home/ubuntu') {
+        stash includes: '.raxpub', name: 'raxpub'
+    }
+    
+}
+
 node('onmetal-provisioner') {
 
     // Load the external functions using fileLoader since the git command 
     // might not be available at the agent yet
-    fileLoader.withGit('https://github.com/CasJ/qa-jenkins-onmetal.git', 'master', null, '') {
+    fileLoader.withGit('https://github.com/osic/qa-jenkins-onmetal.git', 'master', null, '') {
         common = fileLoader.load('jenkins/common.groovy');
         osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
     }
     common.wait_for_agent_setup()
 
-    // Download the project repository and load external functions
+    // Download the project repository and paste the Rax key
     sh """
     rm -rf ${home}
     git clone https://github.com/osic/qa-jenkins-onmetal.git ${home}
-    cp /home/ubuntu/.raxpub ${home}.raxpub
     """
+    dir("${home}") {
+        unstash 'raxpub'
+    }
     
     // Provision the onMetal host
     onmetal_ip = osa.onmetal_provision(home)
