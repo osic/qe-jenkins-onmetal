@@ -12,18 +12,14 @@ stage 'Pre-Deployment'
 echo 'Provisioning an onMetal server and preparing it to run OSA'
 node('onmetal-provisioner') {
 
-    // Load the external functions
-    fileLoader.withGit('https://github.com/CasJ/qa-jenkins-onmetal.git', 'master', null, '') {
-        common = fileLoader.load('jenkins/common.groovy');
-        osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
-    }
-
-    // Download the project repository
+    // Download the project repository and load external functions
     sh """
     rm -rf ${home}
     git clone https://github.com/osic/qa-jenkins-onmetal.git ${home}
     cp /home/ubuntu/.raxpub ${home}.raxpub
     """
+    common = load "${home}jenkins/common.groovy"
+    osa = load "${home}jenkins/osa_onmetal.functions.groovy"
     
     // Provision the onMetal host
     onmetal_ip = osa.onmetal_provision(home)
