@@ -31,7 +31,7 @@
         - chekout-mitaka-version
         
     - name: Run Upgrade.sh
-      command: echo 'YES' | ./scripts/run-upgrade.sh
+      shell: echo 'YES' | ./scripts/run-upgrade.sh
       args:
         chdir: /opt/openstack-ansible
       tags:
