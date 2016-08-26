@@ -88,7 +88,7 @@ def vm_preparation_for_osa(playbooks_path) {
     // Prepare each VM for OSA installation
     sh """
     cd ${playbooks_path}
-    sudo ansible-playbook -i hosts prepare_for_osa.yaml
+    sudo ansible-playbook -i hosts prepare_for_osa.yaml -e "openstack_release=liberty"
     """
 
 }
@@ -101,6 +101,14 @@ def deploy_openstack(playbooks_path) {
     sudo ansible-playbook -i hosts deploy_osa.yaml
     """
 
+}
+
+
+def upgrade_deployment(playbooks_path) {
+    sh """
+    cd ${playbooks_path}
+    sudo ansible-playbook -i hosts upgrade_osa.yaml
+    """
 }
 
 
