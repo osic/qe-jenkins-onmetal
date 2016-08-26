@@ -16,17 +16,19 @@ node('master') {
     dir('/home/ubuntu') {
         stash includes: '.raxpub', name: 'raxpub'
     }
-    
-}
 
-node('onmetal-provisioner') {
-
-    // Load the external functions using fileLoader since the git command 
+    // Load the external functions using master since the git command
     // might not be available at the agent yet
     fileLoader.withGit('https://github.com/osic/qa-jenkins-onmetal.git', 'master', null, '') {
         common = fileLoader.load('jenkins/common.groovy');
         osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
     }
+    
+}
+
+node('onmetal-provisioner') {
+
+    // Wait for the agent to finish running cloud-init
     common.wait_for_agent_setup()
 
     // Download the project repository and paste the Rax key
