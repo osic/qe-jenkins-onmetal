@@ -38,7 +38,7 @@ def onmetal_provision(playbooks_path) {
     """
 
     // Get server IP address
-    String hosts = readFile("${playbooks_path}hosts")
+    String hosts = readFile("${playbooks_path}/hosts")
     String ip = hosts.substring(hosts.indexOf('=')+1)
 
     // Wait for server to become active

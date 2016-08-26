@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 def osa, common
-String home = '/home/ubuntu/qa-jenkins-onmetal/'
+String workspace_dir 
 String onmetal_ip
 
 
@@ -31,23 +31,22 @@ node('onmetal-provisioner') {
     // Wait for the agent to finish running cloud-init
     common.wait_for_agent_setup()
 
+    // Get the workspace directory in the agent
+    workspace_dir = pwd()
+    echo "The workspace directory is ${workspace_dir}"
+
     // Download the project repository and paste the Rax key
-    sh """
-    rm -rf ${home}
-    git clone https://github.com/osic/qa-jenkins-onmetal.git ${home}
-    """
-    dir("${home}") {
-        unstash 'raxpub'
-    }
+    git 'https://github.com/osic/qa-jenkins-onmetal.git'
+    unstash 'raxpub'
     
     // Provision the onMetal host
-    onmetal_ip = osa.onmetal_provision(home)
+    onmetal_ip = osa.onmetal_provision(workspace_dir)
 
     // Provision the VMs in the onMetal host
-    osa.vm_provision(home)
+    osa.vm_provision(workspace_dir)
 
     // Prepare the VMs to run OpenStack
-    osa.vm_preparation_for_osa(home)
+    osa.vm_preparation_for_osa(workspace_dir)
 
 }
 
@@ -60,7 +59,7 @@ echo 'Deploying OpenStack using OSA'
 node('onmetal-provisioner') {
 
     // Deploy OpenStack with OSA
-    osa.deploy_openstack(home)
+    osa.deploy_openstack(workspace_dir)
     
     // Install and configure Tempest on the onMetal host
     osa.configure_tempest(onmetal_ip)
@@ -107,9 +106,10 @@ echo 'Deleting the onMetal host and its VMs'
 node('onmetal-provisioner') {
 
     // Delete VMs
-    osa.delete_virtual_resources(home)
+    osa.delete_virtual_resources(workspace_dir)
     
     // Delete the onMetal host
-    osa.delete_onmetal(home, onmetal_ip)
+    osa.delete_onmetal(workspace_dir, onmetal_ip)
 
 }
+
