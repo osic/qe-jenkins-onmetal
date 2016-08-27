@@ -43,10 +43,10 @@ node('onmetal-provisioner') {
     onmetal_ip = osa.onmetal_provision(workspace_dir)
 
     // Provision the VMs in the onMetal host
-    osa.vm_provision(workspace_dir)
+    osa.vm_provision()
 
     // Prepare the VMs to run OpenStack
-    osa.vm_preparation_for_osa(workspace_dir)
+    osa.vm_preparation_for_osa()
 
 }
 
@@ -59,7 +59,7 @@ echo 'Deploying OpenStack using OSA'
 node('onmetal-provisioner') {
 
     // Deploy OpenStack with OSA
-    osa.deploy_openstack(workspace_dir)
+    osa.deploy_openstack()
     
     // Install and configure Tempest on the onMetal host
     osa.configure_tempest(onmetal_ip)
@@ -106,10 +106,10 @@ echo 'Deleting the onMetal host and its VMs'
 node('onmetal-provisioner') {
 
     // Delete VMs
-    osa.delete_virtual_resources(workspace_dir)
+    osa.delete_virtual_resources()
     
     // Delete the onMetal host
-    osa.delete_onmetal(workspace_dir, onmetal_ip)
+    osa.delete_onmetal(onmetal_ip)
 
 }
 

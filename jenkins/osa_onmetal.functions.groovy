@@ -26,16 +26,10 @@ def wait_for_ping(host_ip) {
 def onmetal_provision(playbooks_path) {
 
     // Spin onMetal Server
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook build_onmetal.yaml --tags 'iad'
-    """
+    ansiblePlaybook playbook: 'build_onmetal.yaml', sudoUser: null, tags: 'iad'
 
     // Verify onMetal server data
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts get_onmetal_facts.yaml --tags 'iad'
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: 'iad'
 
     // Get server IP address
     String hosts = readFile("${playbooks_path}/hosts")
@@ -46,17 +40,11 @@ def onmetal_provision(playbooks_path) {
 
     // Prepare OnMetal server, retry up to 5 times for the command to work
     retry(5) {
-        sh """
-        cd ${playbooks_path}
-        sudo ansible-playbook -i hosts prepare_onmetal.yaml
-        """
+        ansiblePlaybook inventory: 'hosts', playbook: 'prepare_onmetal.yaml', sudoUser: null
     }
 
     // Apply CPU fix - will restart server (~5 min)
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts set_onmetal_cpu.yaml
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'set_onmetal_cpu.yaml', sudoUser: null
 
     // Wait for the server to come back online
     wait_for_ping(ip)
@@ -66,40 +54,28 @@ def onmetal_provision(playbooks_path) {
 }
 
 
-def vm_provision(playbooks_path) {
+def vm_provision() {
 
     // Configure VMs onMetal server
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts configure_onmetal.yaml
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'configure_onmetal.yaml', sudoUser: null
 
     // Create VMs where OSA will be deployed
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts create_lab.yaml
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'create_lab.yaml', sudoUser: null
 
 }
 
 
-def vm_preparation_for_osa(playbooks_path) {
+def vm_preparation_for_osa() {
 
     // Prepare each VM for OSA installation
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts prepare_for_osa.yaml
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
 
 }
 
 
-def deploy_openstack(playbooks_path) {
-
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts deploy_osa.yaml
-    """
+def deploy_openstack() {
+    
+    ansiblePlaybook inventory: 'hosts', playbook: 'deploy_osa.yaml', sudoUser: null
 
 }
 
@@ -158,32 +134,18 @@ def run_tempest_smoke_tests(host_ip) {
 }
 
 
-def delete_virtual_resources(playbooks_path) {
+def delete_virtual_resources() {
 
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts destroy_virtual_machines.yaml
-    """
-    
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts destroy_virtual_networks.yaml
-    """
-    
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts destroy_lab_state_file.yaml
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'destroy_virtual_machines.yaml', sudoUser: null
+    ansiblePlaybook inventory: 'hosts', playbook: 'destroy_virtual_networks.yaml', sudoUser: null
+    ansiblePlaybook inventory: 'hosts', playbook: 'destroy_lab_state_file.yaml', sudoUser: null
 
 }
 
 
-def delete_onmetal(playbooks_path, onmetal_ip) {
+def delete_onmetal(onmetal_ip) {
 
-    sh """
-    cd ${playbooks_path}
-    sudo ansible-playbook -i hosts destroy_onmetal.yaml --tags 'iad'
-    """
+    ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: 'iad'
 
     sh """
     ssh-keygen -R ${onmetal_ip}
