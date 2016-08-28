@@ -4,16 +4,15 @@
 echo "Loading external functions for an onMetal host..."
 
 
-def wait_for_ping(host_ip) {
+def wait_for_ping(host_ip, timeout_sec) {
 
     echo "Waiting for the host with IP:${host_ip} to become online."
     def response
     def current_time
-    int timeout = 360
     def initial_time = sh returnStdout: true, script: 'date +%s'
     waitUntil {
         current_time = sh returnStdout: true, script: 'date +%s'
-        if (current_time.toInteger() - initial_time.toInteger() > timeout) {
+        if (current_time.toInteger() - initial_time.toInteger() > timeout_sec.toInteger()) {
             error "The host did not respond to ping within the timeout of ${timeout} seconds"
         }
         response = sh returnStatus: true, script: "ping -q -c 1 ${host_ip}"
@@ -36,7 +35,7 @@ def onmetal_provision(playbooks_path) {
     String ip = hosts.substring(hosts.indexOf('=')+1)
 
     // Wait for server to become active
-    wait_for_ping(ip)
+    wait_for_ping(ip, 600)
 
     // Prepare OnMetal server, retry up to 5 times for the command to work
     retry(5) {
@@ -47,7 +46,7 @@ def onmetal_provision(playbooks_path) {
     ansiblePlaybook inventory: 'hosts', playbook: 'set_onmetal_cpu.yaml', sudoUser: null
 
     // Wait for the server to come back online
-    wait_for_ping(ip)
+    wait_for_ping(ip, 600)
 
     return (ip)
 

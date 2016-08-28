@@ -29,7 +29,7 @@ def wait_for_ping(host_ip, timeout_sec) {
     def initial_time = sh returnStdout: true, script: 'date +%s'
     waitUntil {
         current_time = sh returnStdout: true, script: 'date +%s'
-        if (current_time.toInteger() - initial_time.toInteger() > timeout.toInteger()) {
+        if (current_time.toInteger() - initial_time.toInteger() > timeout_sec.toInteger()) {
             error "The host did not respond to ping within the timeout of ${timeout} seconds"
         }
         response = sh returnStatus: true, script: "ping -q -c 1 ${host_ip}"
