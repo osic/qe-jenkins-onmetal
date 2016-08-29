@@ -22,16 +22,16 @@ def wait_for_ping(host_ip, timeout_sec) {
 }
 
 
-def onmetal_provision(playbooks_path) {
+def onmetal_provision(datacenter_tag) {
 
     // Spin onMetal Server
-    ansiblePlaybook playbook: 'build_onmetal.yaml', sudoUser: null, tags: 'iad'
+    ansiblePlaybook playbook: 'build_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
     // Verify onMetal server data
-    ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: 'iad'
+    ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
     // Get server IP address
-    String hosts = readFile("${playbooks_path}/hosts")
+    String hosts = readFile("hosts")
     String ip = hosts.substring(hosts.indexOf('=')+1)
 
     // Wait for server to become active
@@ -142,9 +142,9 @@ def delete_virtual_resources() {
 }
 
 
-def delete_onmetal(onmetal_ip) {
+def delete_onmetal(onmetal_ip, datacenter_tag) {
 
-    ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: 'iad'
+    ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
     sh """
     ssh-keygen -R ${onmetal_ip}

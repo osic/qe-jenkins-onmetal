@@ -40,7 +40,7 @@ node('onmetal-provisioner') {
     unstash 'raxpub'
     
     // Provision the onMetal host
-    onmetal_ip = osa.onmetal_provision(workspace_dir)
+    onmetal_ip = osa.onmetal_provision('dfw')
 
     // Provision the VMs in the onMetal host
     osa.vm_provision()
@@ -109,7 +109,7 @@ node('onmetal-provisioner') {
     osa.delete_virtual_resources()
     
     // Delete the onMetal host
-    osa.delete_onmetal(onmetal_ip)
+    osa.delete_onmetal(onmetal_ip, 'dfw')
 
 }
 
