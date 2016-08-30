@@ -7,7 +7,8 @@ echo "Loading external common functions..."
 // to perform its initial setup
 def wait_for_agent_setup() {
     
-    def cloud_init, matcher
+    String cloud_init
+    def matcher
     timeout(10) {
         waitUntil {
             echo 'Waiting for cloud-init to finish'
