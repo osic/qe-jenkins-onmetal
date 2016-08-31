@@ -1,15 +1,12 @@
 #!/usr/bin/env groovy
 
-echo "Loading external common functions..."
-
-
 // Function that waits up to 10 minutes for a new agent to finish running cloud-init
 // to perform its initial setup
 def wait_for_agent_setup() {
     
+    echo 'Waiting for cloud-init to finish setting up the VM...'
     timeout(10) {
         waitUntil {
-            echo 'Waiting for cloud-init to finish'
             def cloud_init = readFile('/var/log/cloud-init-output.log')
             def matcher = cloud_init =~ 'Cloud-init .* finished'
             matcher ? true : false

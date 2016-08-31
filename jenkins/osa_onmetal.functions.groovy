@@ -25,9 +25,11 @@ def wait_for_ping(host_ip, timeout_sec) {
 def onmetal_provision(datacenter_tag) {
 
     // Spin onMetal Server
+    echo 'Running the following playbook: build_onmetal'
     ansiblePlaybook playbook: 'build_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
     // Verify onMetal server data
+    echo 'Running the following playbook: get_onmetal_facts'
     ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
     // Get server IP address
@@ -38,11 +40,13 @@ def onmetal_provision(datacenter_tag) {
     wait_for_ping(ip, 600)
 
     // Prepare OnMetal server, retry up to 5 times for the command to work
+    echo 'Running the following playbook: prepare_onmetal'
     retry(5) {
         ansiblePlaybook inventory: 'hosts', playbook: 'prepare_onmetal.yaml', sudoUser: null
     }
 
     // Apply CPU fix - will restart server (~5 min)
+    echo 'Running the following playbook: set_onmetal_cpu'
     ansiblePlaybook inventory: 'hosts', playbook: 'set_onmetal_cpu.yaml', sudoUser: null
 
     // Wait for the server to come back online
@@ -56,9 +60,11 @@ def onmetal_provision(datacenter_tag) {
 def vm_provision() {
 
     // Configure VMs onMetal server
+    echo 'Running the following playbook: configure_onmetal'
     ansiblePlaybook inventory: 'hosts', playbook: 'configure_onmetal.yaml', sudoUser: null
 
     // Create VMs where OSA will be deployed
+    echo 'Running the following playbook: create_lab'
     ansiblePlaybook inventory: 'hosts', playbook: 'create_lab.yaml', sudoUser: null
 
 }
@@ -67,6 +73,7 @@ def vm_provision() {
 def vm_preparation_for_osa() {
 
     // Prepare each VM for OSA installation
+    echo 'Running the following playbook: prepare_for_osa'
     ansiblePlaybook inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
 
 }
@@ -74,6 +81,7 @@ def vm_preparation_for_osa() {
 
 def deploy_openstack() {
     
+    echo 'Running the following playbook: deploy_osa'
     ansiblePlaybook inventory: 'hosts', playbook: 'deploy_osa.yaml', sudoUser: null
 
 }
@@ -135,8 +143,11 @@ def run_tempest_smoke_tests(host_ip) {
 
 def delete_virtual_resources() {
 
+    echo 'Running the following playbook: destroy_virtual_machines'
     ansiblePlaybook inventory: 'hosts', playbook: 'destroy_virtual_machines.yaml', sudoUser: null
+    echo 'Running the following playbook: destroy_virtual_networks'
     ansiblePlaybook inventory: 'hosts', playbook: 'destroy_virtual_networks.yaml', sudoUser: null
+    echo 'Running the following playbook: destroy_lab_state_file'
     ansiblePlaybook inventory: 'hosts', playbook: 'destroy_lab_state_file.yaml', sudoUser: null
 
 }
@@ -144,6 +155,7 @@ def delete_virtual_resources() {
 
 def delete_onmetal(onmetal_ip, datacenter_tag) {
 
+    echo 'Running the following playbook: destroy_onmetal'
     ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
     sh """
