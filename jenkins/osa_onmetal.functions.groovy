@@ -108,7 +108,7 @@ done'''
     // Copy the script to the onMetal host
     sh """
     chmod +x configure_tempest.sh
-    scp configure_tempest.sh root@${host_ip}:/root
+    scp -o StrictHostKeyChecking=no configure_tempest.sh root@${host_ip}:/root/configure_tempest.sh
     """
 
     // Run the script in the remote host
@@ -138,12 +138,12 @@ cp .testrepository/\$stream_id /root/subunit/before
     // Copy the script to the onMetal host
     sh """
     chmod +x run_tempest.sh
-    scp run_tempest.sh root@${host_ip}:/root
+    scp -o StrictHostKeyChecking=no run_tempest.sh root@${host_ip}:/root/run_tempest.sh
     """
 
     // Run the tests and store the results in ~/subunit/before
     sh """
-    ssh -o StrictHostKeyChecking=no root@${onmetal_ip} '''
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     ./run_tempest.sh
     '''
     """
