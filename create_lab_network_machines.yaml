@@ -5,39 +5,34 @@
   remote_user: root
 
   tasks:
-    - name: "Check for existing lab"
-      stat: path=/root/.labconfig
-      register: labrunning
+    - name: "Check for state file"
+      stat: path=/root/.netconfig
+      register: netrunning
 
-    - name: "Copy Network Machines"
-      command: 
-      async: 3600
-      poll: 0
-      register: labcreated
-      when: labrunning.stat.exists == False
-
-    - name: "Wait for Lab creation"
-      async_status: jid={{ labcreated.ansible_job_id }}
-      register: labdone
-      until: labdone.finished
-      retries: 240
-      delay: 10
-      when: labcreated.ansible_job_id is defined
-
-    - name: "Give nodes another minute"
-      pause: seconds=60
-      when: labrunning.stat.exists == False
-
-    - name: "Prepare Swift Disks"
-      command: ansible-playbook -i inventory playbooks/swift-disks-prepare.yml
+    - name: "Create and start firewall VM"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/edgedevices
+        cp /labshare/templates/edgedevices/firewall.tar.gz /var/lib/libvirt/images
+        tar xzf /var/lib/libvirt/images/firewall.tar.gz -C /var/lib/libvirt/images
+        virsh define firewall.xml
+        virsh start firewall
       args:
-        chdir: /root/rpcops-onmetal-labconfigurator
-      ignore_errors: yes
-      when: labrunning.stat.exists == False
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
 
-    - name: "Prepare Cinder Disks"
-      command: ansible-playbook -i inventory playbooks/cinder-disks-prepare.yml
+    - name: "Create and start loadbalancer VM"
+      shell: |
+        cd /root/rpcops-onmetal-labconfigurator/resources/edgedevices
+        cp /labshare/templates/edgedevices/loadbalancer.tar.gz /var/lib/libvirt/images
+        tar xzf /var/lib/libvirt/images/loadbalancer.tar.gz -C /var/lib/libvirt/images
+        virsh define loadbalancer.xml
+        virsh start loadbalancer
       args:
-        chdir: /root/rpcops-onmetal-labconfigurator
-      ignore_errors: yes
-      when: labrunning.stat.exists == False
+        executable: /bin/bash
+      when: netrunning.stat.exists == False
+
+    - name: "Give network machines 30 seconds to boot"
+      pause: seconds=30
+
+    - name: "Create netconfig state file"
+      command: touch /root/.netconfig
