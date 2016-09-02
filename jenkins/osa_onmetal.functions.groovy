@@ -31,7 +31,7 @@ def onmetal_provision(datacenter_tag) {
 
     // Get server IP address
     String hosts = readFile("hosts")
-    String ip = hosts.substring(hosts.indexOf('=')+1)
+    String ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
 
     // Wait for server to become active
     wait_for_ping(ip, 600)
@@ -86,6 +86,8 @@ def deploy_openstack() {
 
 def configure_tempest(host_ip) {
 
+    String remote_location
+
     // Add a script to the provisioner for installing and configuring Tempest
     writeFile file: 'configure_tempest.sh', text: '''#!/bin/bash
 git clone https://github.com/openstack/tempest.git /root/tempest
@@ -113,9 +115,10 @@ done'''
     }
 
     // Copy the script to the onMetal host
+    remote_location = "root@${host_ip}:/root/configure_tempest.sh"
     sh """
     chmod +x configure_tempest.sh
-    scp -o StrictHostKeyChecking=no configure_tempest.sh root@${host_ip}:/root/configure_tempest.sh
+    scp -o StrictHostKeyChecking=no configure_tempest.sh ${remote_location}
     """
 
     // Run the script in the remote host
@@ -130,6 +133,8 @@ done'''
 
 def run_tempest_smoke_tests(host_ip) {
 
+    String remote_location
+
     // Add a script to the provisioner for running Tempest
     writeFile file: 'run_tempest.sh', text: '''#!/bin/bash
 #!/bin/bash
@@ -143,9 +148,10 @@ cp .testrepository/\$stream_id /root/subunit/before
 '''
 
     // Copy the script to the onMetal host
+    remote_location = "root@${host_ip}:/root/run_tempest.sh"
     sh """
     chmod +x run_tempest.sh
-    scp -o StrictHostKeyChecking=no run_tempest.sh root@${host_ip}:/root/run_tempest.sh
+    scp -o StrictHostKeyChecking=no run_tempest.sh ${remote_location}
     """
 
     // Run the tests and store the results in ~/subunit/before
