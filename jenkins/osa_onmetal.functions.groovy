@@ -106,8 +106,7 @@ sed -ir "s|\$a|\$b|g" /root/tempest/etc/tempest.conf
 done'''
     
     // Copy a random file first to make sure the system is accesible
-    try {
-	sh "ssh -o StrictHostKeyChecking=no root@${host_ip} 'echo\"Adding SSH key to known hosts\"'"
+    try {	
     	sh "scp -o StrictHostKeyChecking=no hosts root@${host_ip}:/root/hosts"
     } catch(Exception ex) {
         echo 'Expected exception catched. System not yet available.'
