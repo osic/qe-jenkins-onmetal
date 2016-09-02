@@ -153,8 +153,7 @@ cp .testrepository/\$stream_id /root/subunit/before
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     ./run_tempest.sh
-o   '''
-t@${host_i
+    '''
     """
     
 }
