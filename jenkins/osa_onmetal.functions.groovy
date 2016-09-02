@@ -105,6 +105,14 @@ b=`cat /root/tempest/etc/tempest.conf.osa | grep "\$a"`
 sed -ir "s|\$a|\$b|g" /root/tempest/etc/tempest.conf
 done'''
     
+    // Copy a random file first to make sure the system is accesible
+    try {
+	sh "ssh -o StrictHostKeyChecking=no root@${host_ip} 'echo\"Adding SSH key to known hosts\"'"
+    	sh "scp -o StrictHostKeyChecking=no hosts root@${host_ip}:/root/hosts"
+    } catch(Exception ex) {
+        echo 'Expected exception catched. System not yet available.'
+    }
+
     // Copy the script to the onMetal host
     sh """
     chmod +x configure_tempest.sh
@@ -145,7 +153,8 @@ cp .testrepository/\$stream_id /root/subunit/before
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     ./run_tempest.sh
-    '''
+o   '''
+t@${host_i
     """
     
 }
