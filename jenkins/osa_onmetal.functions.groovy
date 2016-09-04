@@ -67,11 +67,11 @@ def vm_provision() {
 }
 
 
-def vm_preparation_for_osa() {
+def vm_preparation_for_osa(release = 'stable/mitaka') {
 
     // Prepare each VM for OSA installation
-    echo 'Running the following playbook: prepare_for_osa'
-    ansiblePlaybook inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
+    echo "Running the following playbook: prepare_for_osa, using the following OSA release: ${release}"
+    ansiblePlaybook extras: "openstack_release=${release}", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
 
 }
 
@@ -80,6 +80,14 @@ def deploy_openstack() {
     
     echo 'Running the following playbook: deploy_osa'
     ansiblePlaybook inventory: 'hosts', playbook: 'deploy_osa.yaml', sudoUser: null
+
+}
+
+
+def upgrade_openstack() {
+
+    echo 'Running the following playbook: upgrade_osa'
+    ansiblePlaybook inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
 
 }
 
