@@ -111,7 +111,7 @@ def configure_tempest(host_ip) {
     sh """
     # Copy the config file from the infra utility VM to the onMetal host 
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    scp infra01_utility:/opt/tempest_untagged/etc/tempest.conf /root/tempest/etc/tempest.conf.osa
+    scp infra01_utility:/opt/tempest_*/etc/tempest.conf /root/tempest/etc/tempest.conf.osa
     ''' 
     """
    
