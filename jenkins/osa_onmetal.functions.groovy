@@ -71,7 +71,7 @@ def vm_preparation_for_osa(release = 'stable/mitaka') {
 
     // Prepare each VM for OSA installation
     echo "Running the following playbook: prepare_for_osa, using the following OSA release: ${release}"
-    ansiblePlaybook extras: "openstack_release=${release}", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
+    ansiblePlaybook extras: "-e \"openstack_release=${release}\"", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
 
 }
 
