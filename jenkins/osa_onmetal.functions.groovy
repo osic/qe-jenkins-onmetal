@@ -21,33 +21,37 @@ def wait_for_ping(host_ip, timeout_sec) {
 
 def onmetal_provision(datacenter_tag) {
 
-    // Spin onMetal Server
-    echo 'Running the following playbook: build_onmetal'
-    ansiblePlaybook playbook: 'build_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
+    String ip, hosts
 
-    // Verify onMetal server data
-    echo 'Running the following playbook: get_onmetal_facts'
-    ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: "${datacenter_tag}"
+    try {
 
-    // Get server IP address
-    String hosts = readFile("hosts")
-    String ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
+        // Spin onMetal Server
+        echo 'Running the following playbook: build_onmetal'
+        ansiblePlaybook playbook: 'build_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
-    // Wait for server to become active
-    wait_for_ping(ip, 600)
+        // Verify onMetal server data
+        echo 'Running the following playbook: get_onmetal_facts'
+        ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: "${datacenter_tag}"
+    
+        // Get server IP address
+        hosts = readFile("hosts")
+        ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
 
-    // Prepare OnMetal server, retry up to 5 times for the command to work
-    echo 'Running the following playbook: prepare_onmetal'
-    retry(5) {
-        ansiblePlaybook inventory: 'hosts', playbook: 'prepare_onmetal.yaml', sudoUser: null
+        // Prepare OnMetal server, retry up to 5 times for the command to work
+        echo 'Running the following playbook: prepare_onmetal'
+        retry(5) {
+            ansiblePlaybook inventory: 'hosts', playbook: 'prepare_onmetal.yaml', sudoUser: null
+        }
+
+        // Apply CPU fix - will restart server (~5 min)
+        echo 'Running the following playbook: set_onmetal_cpu'
+        ansiblePlaybook inventory: 'hosts', playbook: 'set_onmetal_cpu.yaml', sudoUser: null
+
+    } catch (err) {
+        // If there is an error, tear down and re-raise the exception
+        ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
+        throw err
     }
-
-    // Apply CPU fix - will restart server (~5 min)
-    echo 'Running the following playbook: set_onmetal_cpu'
-    ansiblePlaybook inventory: 'hosts', playbook: 'set_onmetal_cpu.yaml', sudoUser: null
-
-    // Wait for the server to come back online
-    wait_for_ping(ip, 600)
 
     return (ip)
 
@@ -71,7 +75,7 @@ def vm_preparation_for_osa(release = 'stable/mitaka') {
 
     // Prepare each VM for OSA installation
     echo "Running the following playbook: prepare_for_osa, using the following OSA release: ${release}"
-    ansiblePlaybook extras: "-e \"openstack_release=${release}\"", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
+    ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
 
 }
 
@@ -84,10 +88,11 @@ def deploy_openstack() {
 }
 
 
-def upgrade_openstack() {
+def upgrade_openstack(release = 'stable/mitaka') {
 
-    echo 'Running the following playbook: upgrade_osa'
-    ansiblePlaybook inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
+    // Upgrade OSA to a specific release
+    echo "Running the following playbook: upgrade_osa, to upgrade to the following release: ${release}"
+    ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
 
 }
 
@@ -166,9 +171,11 @@ def delete_onmetal(onmetal_ip, datacenter_tag) {
     echo 'Running the following playbook: destroy_onmetal'
     ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
-    sh """
-    ssh-keygen -R ${onmetal_ip}
-    """
+    if (onmetal_ip != null) {
+        sh """
+        ssh-keygen -R ${onmetal_ip}
+        """
+    }
 
 }
 

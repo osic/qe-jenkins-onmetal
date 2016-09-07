@@ -17,7 +17,6 @@
       register: cpufix
       when: cpustatus.stat.exists == False
 
-# Luz said Jenkins can handle this, leaving for contingency
     - name: "Check port 22 is open"
       local_action:
         module: wait_for

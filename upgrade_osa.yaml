@@ -13,7 +13,7 @@
         clone: no
         accept_hostkey: yes
         recursive: yes
-        version: "{{ osa_release }}"
+        version: "{{ openstack_release }}"
       tags:
         - chekout-mitaka-version
        
