@@ -1,9 +1,27 @@
 #!/usr/bin/env groovy
 
 
+def get_onmetal_ip() {
+
+    // Get the onmetal host IP address
+    if (fileExists('hosts')) {
+
+        String hosts = readFile("hosts")
+        String ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
+        return (ip)
+
+    } else {
+
+        return (null)
+
+    }
+
+}
+
+
 def onmetal_provision(datacenter_tag) {
 
-    String ip, hosts
+    String ip
 
     try {
 
@@ -16,8 +34,7 @@ def onmetal_provision(datacenter_tag) {
         ansiblePlaybook inventory: 'hosts', playbook: 'get_onmetal_facts.yaml', sudoUser: null, tags: "${datacenter_tag}"
     
         // Get server IP address
-        hosts = readFile("hosts")
-        ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
+        ip = get_onmetal_ip()
 
         // Prepare OnMetal server, retry up to 5 times for the command to work
         echo 'Running the following playbook: prepare_onmetal'
@@ -31,7 +48,7 @@ def onmetal_provision(datacenter_tag) {
 
     } catch (err) {
         // If there is an error, tear down and re-raise the exception
-        ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
+        delete_onmetal(datacenter_tag)
         throw err
     }
 
@@ -55,17 +72,39 @@ def vm_provision() {
 
 def vm_preparation_for_osa(release = 'stable/mitaka') {
 
-    // Prepare each VM for OSA installation
-    echo "Running the following playbook: prepare_for_osa, using the following OSA release: ${release}"
-    ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
+    try {
 
-}
+        // Prepare each VM for OSA installation
+        echo "Running the following playbook: prepare_for_osa, using the following OSA release: ${release}"
+        ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
+
+    } catch (err) {
+    
+        // If there is an error, tear down and re-raise the exception
+        delete_virtual_resources()
+        //delete_onmetal(datacenter_tag)
+        throw err
+
+    } 
+
+} 
 
 
 def deploy_openstack() {
     
-    echo 'Running the following playbook: deploy_osa'
-    ansiblePlaybook inventory: 'hosts', playbook: 'deploy_osa.yaml', sudoUser: null
+    try {
+
+        echo 'Running the following playbook: deploy_osa'
+        ansiblePlaybook inventory: 'hosts', playbook: 'deploy_osa.yaml', sudoUser: null
+
+    } catch (err) {
+
+        // If there is an error, tear down and re-raise the exception
+        delete_virtual_resources()
+        //delete_onmetal(datacenter_tag)
+        throw err
+
+    }
 
 }
 
@@ -79,7 +118,9 @@ def upgrade_openstack(release = 'stable/mitaka') {
 }
 
 
-def configure_tempest(host_ip) {
+def configure_tempest() {
+
+    String host_ip = get_onmetal_ip()
 
     // Install Tempest on the onMetal host
     echo 'Installing Tempest on the onMetal host'
@@ -119,7 +160,9 @@ def configure_tempest(host_ip) {
 }
 
 
-def run_tempest_smoke_tests(host_ip) {
+def run_tempest_smoke_tests() {
+
+    String host_ip = get_onmetal_ip()
 
     // Run the tests and store the results in ~/subunit/before
     sh """
@@ -148,14 +191,15 @@ def delete_virtual_resources() {
 }
 
 
-def delete_onmetal(onmetal_ip, datacenter_tag) {
+def delete_onmetal(datacenter_tag) {
 
     echo 'Running the following playbook: destroy_onmetal'
     ansiblePlaybook inventory: 'hosts', playbook: 'destroy_onmetal.yaml', sudoUser: null, tags: "${datacenter_tag}"
 
-    if (onmetal_ip != null) {
+    String host_ip = get_onmetal_ip()
+    if (host_ip != null) {
         sh """
-        ssh-keygen -R ${onmetal_ip}
+        ssh-keygen -R ${host_ip}
         """
     }
 

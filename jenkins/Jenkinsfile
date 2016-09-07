@@ -3,6 +3,9 @@
 def osa, common
 String workspace_dir 
 String onmetal_ip
+String datacenter = 'dfw'
+String from_release = 'liberty'
+String to_release = 'stable/mitaka'
 
 
 // *******************************
@@ -40,13 +43,13 @@ node('onmetal-provisioner') {
     unstash 'raxpub'
     
     // Provision the onMetal host
-    onmetal_ip = osa.onmetal_provision('dfw')
+    onmetal_ip = osa.onmetal_provision(datacenter)
 
     // Provision the VMs in the onMetal host
     osa.vm_provision()
 
     // Prepare the VMs to run OpenStack
-    osa.vm_preparation_for_osa()
+    osa.vm_preparation_for_osa(from_release)
 
 }
 
@@ -62,8 +65,8 @@ node('onmetal-provisioner') {
     osa.deploy_openstack()
     
     // Install and configure Tempest on the onMetal host
-    osa.configure_tempest(onmetal_ip)
-    
+    osa.configure_tempest()  
+ 
 }
 
 
@@ -75,7 +78,7 @@ echo 'Validating the OpenStack deployment'
 node('onmetal-provisioner') {
 
     // Run the tempest tests
-    osa.run_tempest_smoke_tests(onmetal_ip)
+    osa.run_tempest_smoke_tests()
 
 }
 
@@ -83,13 +86,26 @@ node('onmetal-provisioner') {
 // *******************************
 stage 'Upgrade'
 // *******************************
-echo 'To be defined...'
+
+echo "Upgrading the OpenStack deployment from ${from_release} to ${to_release}"
+node('onmetal-provisioner') {
+ 
+    osa.upgrade_openstack(to_release)
+    
+}
 
 
 // *******************************
 stage 'Post-Upgrade Validation'
 // *******************************
-echo 'To be defined...'
+
+echo 'Validating the OpenStack deployment after the upgrade'
+node('onmetal-provisioner') {
+ 
+    // Run the tempest tests
+    osa.run_tempest_smoke_tests()
+    
+}
 
 
 // *******************************
@@ -109,7 +125,7 @@ node('onmetal-provisioner') {
     osa.delete_virtual_resources()
     
     // Delete the onMetal host
-    osa.delete_onmetal(onmetal_ip, 'dfw')
+    osa.delete_onmetal(datacenter)
 
 }
 
