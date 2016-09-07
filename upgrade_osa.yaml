@@ -4,34 +4,21 @@
   hosts: all
   remote_user: root
   serial: 1
-  environment:
-    I_REALLY_KNOW_WHAT_I_AM_DOING: true
   
   tasks:
-    - name: Checkout stable/mitaka
+    - name: Checkout to a specific release
       git: 
         repo: http://github.com/openstack/openstack-ansible
         dest: /opt/openstack-ansible
         clone: no
         accept_hostkey: yes
         recursive: yes
-        version: "stable/mitaka"
+        version: "{{ osa_release }}"
       tags:
         - chekout-mitaka-version
-    
-    - name: Checkout 13.3.2 tag
-      git: 
-        repo: http://github.com/openstack/openstack-ansible
-        dest: /opt/openstack-ansible
-        clone: no
-        accept_hostkey: yes
-        recursive: yes
-        version: "13.3.2"
-      tags:
-        - chekout-mitaka-version
-        
+       
     - name: Run Upgrade.sh
-      shell: echo 'YES' | ./scripts/run-upgrade.sh
+      shell: echo 'YES' | I_REALLY_KNOW_WHAT_I_AM_DOING=true /opt/openstack-ansible/scripts/run-upgrade.sh
       args:
         chdir: /opt/openstack-ansible
       tags:
