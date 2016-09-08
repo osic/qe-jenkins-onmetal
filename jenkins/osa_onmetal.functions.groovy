@@ -113,9 +113,7 @@ def upgrade_openstack(release = 'stable/mitaka') {
 
     // Upgrade OSA to a specific release
     echo "Running the following playbook: upgrade_osa, to upgrade to the following release: ${release}"
-    retry(3) {
-        ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
-    }
+    ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null  
 
 }
 
