@@ -78,7 +78,7 @@ echo 'Validating the OpenStack deployment'
 node('onmetal-provisioner') {
 
     // Run the tempest tests
-    osa.run_tempest_smoke_tests()
+    osa.run_tempest_smoke_tests('before_upgrade')
 
 }
 
@@ -103,7 +103,7 @@ echo 'Validating the OpenStack deployment after the upgrade'
 node('onmetal-provisioner') {
  
     // Run the tempest tests
-    osa.run_tempest_smoke_tests()
+    osa.run_tempest_smoke_tests('after_upgrade')
     
 }
 

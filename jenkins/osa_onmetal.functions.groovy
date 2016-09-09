@@ -129,8 +129,10 @@ def configure_tempest() {
     git clone https://github.com/openstack/tempest.git /root/tempest
     cd /root/tempest/
     sudo pip install -r requirements.txt
+    testr init
     cd /root/tempest/etc/
     wget https://raw.githubusercontent.com/CasJ/openstack_one_node_ci/master/tempest.conf
+    mkdir /root/subunit
     '''
     """
 
@@ -160,19 +162,17 @@ def configure_tempest() {
 }
 
 
-def run_tempest_smoke_tests() {
+def run_tempest_smoke_tests(results_file = 'results') {
 
     String host_ip = get_onmetal_ip()
 
     // Run the tests and store the results in ~/subunit/before
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    mkdir /root/subunit
     cd /root/tempest/
-    testr init
     stream_id=`cat .testrepository/next-stream`
     ostestr --no-slowest --regex smoke
-    cp .testrepository/\$stream_id /root/subunit/before
+    cp .testrepository/\$stream_id /root/subunit/${results_file}
     '''
     """
     
