@@ -131,7 +131,7 @@ def configure_tempest() {
     sudo pip install -r requirements.txt
     testr init
     cd /root/tempest/etc/
-    wget https://raw.githubusercontent.com/CasJ/openstack_one_node_ci/master/tempest.conf
+    wget https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/tempest.conf
     mkdir /root/subunit
     '''
     """
