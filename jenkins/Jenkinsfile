@@ -4,8 +4,11 @@ def osa, common
 String workspace_dir 
 String onmetal_ip
 String datacenter = 'dfw'
-String from_release = 'liberty'
-String to_release = 'stable/mitaka'
+
+// Jenkins must provide these two variables as parameters or the build 
+// will fail:
+//  - from_release
+//  - to_release
 
 
 // *******************************
