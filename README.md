@@ -2,7 +2,7 @@
 ### OSIC Ops/QA Automation PoC for Rolling Upgrade CI/CD
 
 ### CI/CD Flow
-![alt tag](./onMetalCIFlow.pgn)
+![CIflow](./onMetalCIFlow.pgn)
 [Full Details](https://github.com/osic/osic-upgrade-test/blob/master/master_test_plan.pdf)
 
 ### Elements
