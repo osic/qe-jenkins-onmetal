@@ -2,7 +2,7 @@
 ### OSIC Ops/QA Automation PoC for Rolling Upgrade CI/CD
 
 ### CI/CD Flow
-![CIflow](./onMetalCIFlow.png)
+![CIflow](https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/common/images/onMetalCIFlow.png)
 [Full Details](https://github.com/osic/osic-upgrade-test/blob/master/master_test_plan.pdf)
 
 ### Elements

@@ -23,8 +23,8 @@ This is a more detailed diagram that describes the cleanup followed in the pipel
 ![alt text][ci-workflow-cleanup]
 
 
-[ci-infra]: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/CI-Infra.png "CI Infrastructure for OpenStack Rolling Upgrades"
+[ci-infra]: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/common/images/CI-Infra.png "CI Infrastructure for OpenStack Rolling Upgrades"
 
-[ci-workflow]: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/AIO-multinode-CI-flow.png "CI Workflow for OpenStack Rolling Upgrades"
+[ci-workflow]: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/common/images/AIO-multinode-CI-flow.png "CI Workflow for OpenStack Rolling Upgrades"
 
-[ci-workflow-cleanup]: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/AIO-multinode-CI-flow-cleanup.png "CI Workflow for OpenStack Rolling Upgrades"
+[ci-workflow-cleanup]: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/common/images/AIO-multinode-CI-flow-cleanup.png "CI Workflow for OpenStack Rolling Upgrades"
