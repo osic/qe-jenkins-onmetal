@@ -205,6 +205,34 @@ def delete_onmetal(datacenter_tag) {
 
 }
 
+def setup_during_test() {
+    sh """
+        scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${my_ip}:/root
+        
+        ssh -o StrictHostKeyChecking=no  root@$65.61.144.54 '''
+           cd during-upgrade-tests
+           pip install -r requirements.txt
+        '''
+        """
+}
+
+def start_during_test() {
+    sh """
+        ssh -o StrictHostKeyChecking=no root@65.61.144.54 '''
+        cd during-upgrade-tests
+        sudo ./test_shell.sh
+        sleep 5
+        '''
+        """
+}
+
+def stop_during_test() {
+    sh """
+        ssh -o StrictHostKeyChecking=no root@65.61.144.54 '''
+        sudo touch /usr/api.uptime.stop
+        '''
+        """
+}
 
 // The external code must return it's contents as an object
 return this;
