@@ -222,7 +222,8 @@ def start_during_test() {
     ssh -o StrictHostKeyChecking=no root@65.61.144.54 '''
     cd during-upgrade-tests
     python call_test.py -d
-    '''
+    sleep 5
+    ''' &
     """
 }
 
