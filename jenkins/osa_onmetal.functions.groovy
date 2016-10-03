@@ -205,7 +205,7 @@ def delete_onmetal(datacenter_tag) {
 
 }
 
-def setup_during_test() {
+def setup_during_test(host_ip) {
     String host_ip = get_onmetal_ip()
     println host_ip
     sh """
@@ -217,7 +217,7 @@ def setup_during_test() {
     """
 }
 
-def start_during_test() {
+def start_during_test(host_ip) {
     String host_ip = get_onmetal_ip()
     
     sh """
@@ -228,7 +228,7 @@ def start_during_test() {
     """
 }
 
-def stop_during_test() {
+def stop_during_test(host_ip) {
     String host_ip = get_onmetal_ip()
     println host_ip
     
