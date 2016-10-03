@@ -206,10 +206,11 @@ def delete_onmetal(datacenter_tag) {
 }
 
 def setup_during_test() {
+    String host_ip = get_onmetal_ip()
     
     sh """
-    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@65.61.144.54:/root
-    ssh -o StrictHostKeyChecking=no  root@65.61.144.54 '''
+    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root
+    ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
     cd during-upgrade-tests
     pip install -r requirements.txt
     '''
@@ -217,20 +218,21 @@ def setup_during_test() {
 }
 
 def start_during_test() {
+    String host_ip = get_onmetal_ip()
     
     sh """
-    ssh -o StrictHostKeyChecking=no root@65.61.144.54 '''
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd during-upgrade-tests
     python call_test.py -d
     ''' &
-    sleep 30
     """
 }
 
 def stop_during_test() {
+    String host_ip = get_onmetal_ip()
     
     sh """
-    ssh -o StrictHostKeyChecking=no root@65.61.144.54 '''
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo touch /usr/api.uptime.stop
     '''
     """
