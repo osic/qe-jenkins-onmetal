@@ -206,8 +206,7 @@ def delete_onmetal(datacenter_tag) {
 }
 
 def setup_during_test(host_ip) {
-    String host_ip = get_onmetal_ip()
-    println host_ip
+    
     sh """
     scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
@@ -218,7 +217,6 @@ def setup_during_test(host_ip) {
 }
 
 def start_during_test(host_ip) {
-    String host_ip = get_onmetal_ip()
     
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
@@ -229,8 +227,6 @@ def start_during_test(host_ip) {
 }
 
 def stop_during_test(host_ip) {
-    String host_ip = get_onmetal_ip()
-    println host_ip
     
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
