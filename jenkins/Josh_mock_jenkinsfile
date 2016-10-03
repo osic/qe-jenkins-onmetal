@@ -1,0 +1,155 @@
+#!/usr/bin/env groovy
+
+def osa, common
+String workspace_dir 
+String onmetal_ip
+String datacenter = 'dfw'
+
+// Jenkins must provide these two variables as parameters or the build 
+// will fail:
+//  - from_release
+//  - to_release
+
+
+// *******************************
+stage 'Pre-Deployment'
+// *******************************
+
+echo 'Provisioning an onMetal server and preparing it to run OSA'
+node('master') {
+    
+    // Copy the Rax key from the Jenkins master
+    //dir('/home/ubuntu') {
+    //    stash includes: '.raxpub', name: 'raxpub'
+    //}
+
+    // Load the external functions using master since the git command
+    // might not be available at the agent yet
+    fileLoader.withGit('https://github.com/lamarwhitej/qa-jenkins-onmetal', 'master', null, '') {
+        common = fileLoader.load('jenkins/common.groovy');
+        osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
+    }
+    
+}
+
+node('onmetal-provisioner') {
+
+    // Wait for the agent to finish running cloud-init
+    common.wait_for_agent_setup()
+
+    // Get the workspace directory in the agent
+    workspace_dir = pwd()
+    echo "The workspace directory is ${workspace_dir}"
+
+    // Download the project repository and paste the Rax key
+    git 'https://github.com/osic/qa-jenkins-onmetal.git'
+    //unstash 'raxpub'
+    
+    // Provision the onMetal host
+    //onmetal_ip = osa.onmetal_provision(datacenter)
+
+    // Provision the VMs in the onMetal host
+    //osa.vm_provision()
+
+    // Prepare the VMs to run OpenStack
+    //osa.vm_preparation_for_osa(from_release)
+
+}
+
+
+// *******************************
+stage 'Deployment'
+// *******************************
+
+echo 'Deploying OpenStack using OSA'
+node('onmetal-provisioner') {
+
+    // Deploy OpenStack with OSA
+    //osa.deploy_openstack()
+    
+    // Install and configure Tempest on the onMetal host
+    //osa.configure_tempest()  
+ 
+}
+
+
+// *******************************
+stage 'Post-Deployment Validation'
+// *******************************
+
+echo 'Validating the OpenStack deployment'
+node('onmetal-provisioner') {
+
+    // Run the tempest tests
+    //osa.run_tempest_smoke_tests('before_upgrade')
+
+}
+
+
+// *******************************
+stage 'Upgrade'
+// *******************************
+
+echo "Upgrading the OpenStack deployment from ${from_release} to ${to_release}"
+node('onmetal-provisioner') {
+    
+    // Add Josh's API uptime here
+      //Steve H. Will handle this part
+
+    // Getting IP for During Test
+    def my_ip
+    dir('/home/ubuntu/workspace/onMetal_Sandbox') {
+        my_ip = osa.get_onmetal_ip()
+    }
+    
+    //Pull during test from repo and create dir during-upgrade-tests
+    dir('during-upgrade-tests') {
+        git 'https://github.com/lamarwhitej/test_rolling_upgrades_during'
+
+    //Transfer During test and install requirements
+    osa.setup_during_test(my_ip)
+    }
+    
+    //Start During Tests
+    osa.start_during_test(my_ip)
+    
+    //osa.upgrade_openstack(to_release)
+    
+    //Stop During Test
+    osa.stop_during_test(my_ip)
+}
+
+    
+// *******************************
+stage 'Post-Upgrade Validation'
+// *******************************
+
+echo 'Validating the OpenStack deployment after the upgrade'
+node('onmetal-provisioner') {
+ 
+    // Run the tempest tests
+    //osa.run_tempest_smoke_tests('after_upgrade')
+    
+}
+
+
+// *******************************
+stage 'Reporting'
+// *******************************
+echo 'To be defined'
+
+
+// *******************************
+stage 'Clean Up'
+// *******************************
+
+echo 'Deleting the onMetal host and its VMs'
+node('onmetal-provisioner') {
+
+    // Delete VMs
+    //osa.delete_virtual_resources()
+    
+    // Delete the onMetal host
+    //osa.delete_onmetal(datacenter)
+
+}
