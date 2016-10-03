@@ -230,6 +230,7 @@ def start_during_test() {
 
 def stop_during_test() {
     String host_ip = get_onmetal_ip()
+    println host_ip
     
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
