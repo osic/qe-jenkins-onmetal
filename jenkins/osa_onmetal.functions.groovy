@@ -223,7 +223,7 @@ def start_during_test() {
     cd during-upgrade-tests
     python call_test.py -d
     ''' &
-    sleep 5
+    sleep 30
     """
 }
 
