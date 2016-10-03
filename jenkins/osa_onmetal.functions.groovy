@@ -209,7 +209,7 @@ def setup_during_test() {
     
     sh """
     scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@65.61.144.54:/root
-    ssh -o StrictHostKeyChecking=no  root@$65.61.144.54 '''
+    ssh -o StrictHostKeyChecking=no  root@65.61.144.54 '''
     cd during-upgrade-tests
     pip install -r requirements.txt
     '''
