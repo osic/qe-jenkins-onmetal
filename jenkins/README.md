@@ -16,15 +16,15 @@ The following diagram mentions *static* and *dynamic* agents. Here is a brief ex
 
 This section explains what role plays each one of the machines shown in the diagram above in the CI.
  + Jumpbox: it is a machine that has a public IP address and a reverse proxy installed (NGINX). Its only puropse is to be our gate of entry into our infrastructure. It serves two important functions: 
-..+ It allows us to access all the machines in the infrastructure using the SSH protocol. So if for example we wanted to access the Jenkins Master which has only a private IP address assigned, we would have to do an SSH connection from our computer to the Jumpbox using its public IP address, then do another SSH connection from the Jumpbox to the Jenkins Master.
-..+ It allows us to redirect all the GUI dashbords of the applications running in the CI infrastructure (like Jenkins, Kibana) through the Jumpbox's public IP address. That way, we can access the Jenkins UI by using http://public_IP:8080, and Kibana using http://public_IP:5601.
+   + It allows us to access all the machines in the infrastructure using the SSH protocol. So if for example we wanted to access the Jenkins Master which has only a private IP address assigned, we would have to do an SSH connection from our computer to the Jumpbox using its public IP address, then do another SSH connection from the Jumpbox to the Jenkins Master.
+   + It allows us to redirect all the GUI dashbords of the applications running in the CI infrastructure (like Jenkins, Kibana) through the Jumpbox's public IP address. That way, we can access the Jenkins UI by using http://public_IP:8080, and Kibana using http://public_IP:5601.
  + Jenkins Master: this is the machine that holds the Jenkins installation. This machine is mostly used to orchestrate all the jobs and pipelines in the CI. It is important to note from the diagram above that the Jenkins Master is also listed as a Jenkins Static Agent, the reason for this is because the Jenkins Master has its own executioners that can be set up to run work from the CI workflow, so it can be seen as another agent.
  + Rally: this is a machine that has Rally installed and it is used to run performance benchmarks in OpenStack deployments.
  + ElasticSearch/Kibana: this dual prupose machine it is used for hosting ElasticSearch, which is our engine for storing data resulting from the CI executions, this data can be made visible to end users through visualizations created in Kibana.
  + All In One Host: it is a large VM created for the only purpose of having an All In One OpenStack deployed to it using OpenStack ansible scripts.
  + OnMetal Provisioner: this VM is used for two pruposes:
-..+ It requests an onMetal host from the rackspace Public Cloud.
-..+ It runs all the playbooks for deploying a multi-node OpenStack environment in the onMetal host.
+   + It requests an onMetal host from the rackspace Public Cloud.
+   + It runs all the playbooks for deploying a multi-node OpenStack environment in the onMetal host.
  + OnMetal Host: a bare metal server provided by the Rackspace public cloud that is used to host a multi-node OpenStack deployment.
 
 ## CI Workflow for a multi-node deployment in an onMetal server
