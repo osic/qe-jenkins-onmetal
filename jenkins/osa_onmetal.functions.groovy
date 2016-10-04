@@ -222,7 +222,7 @@ def start_during_test(host_ip) {
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd during-upgrade-tests
     python call_test.py -d
-    ''' &
+    '''
     """
 }
 
