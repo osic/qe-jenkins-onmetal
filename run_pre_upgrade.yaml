@@ -1,0 +1,41 @@
+---
+
+- name: "Run Prework for Rolling Upgrade OSA"
+  hosts: all
+  remote_user: root
+  serial: 1
+  set_fact:
+    main_path: "{{ main_path | /opt/ansible }}"
+  
+  tasks:
+    - name: Checkout to a specific release
+      git: 
+        repo: http://github.com/openstack/openstack-ansible
+        dest: "{{ main_path }}"
+        clone: no
+        accept_hostkey: yes
+        recursive: yes
+        version: "{{ openstack_release }}"
+      tags:
+        - config
+
+    - name: Get set-pre-upgrade.sh file
+      get_url:
+        url: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/run-pre-upgrade.sh
+        dest: "{{ main_path }}"/scripts/set-pre-upgrade.sh
+      tags:
+        - config
+
+    - name: Set pre-upgrade tasks on run-upgrade.sh
+      shell: set-pre-upgrade.sh
+      args:
+        chdir: "{{ main_path }}"/scripts/
+      tags:
+        - config
+
+    - name: Run pre-upgrade via modified run-upgrade.sh
+      shell: export TERM=xterm; echo 'YES' | I_REALLY_KNOW_WHAT_I_AM_DOING=true run-upgrade.sh
+      args:
+        chdir: "{{ main_path }}"/scripts
+      tags:
+        - pre-upgrade
