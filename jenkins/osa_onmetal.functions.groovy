@@ -206,6 +206,21 @@ def delete_onmetal(datacenter_tag) {
 }
 
 
+def run_persistent_resources_tests(action = 'verify', results_file = 'results') {
+
+    String host_ip = get_onmetal_ip()
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    cd /root/tempest/
+    stream_id=`cat .testrepository/next-stream`
+    ostestr --regex persistent-${action}
+    cp .testrepository/\$stream_id /root/subunit/${results_file}
+    '''
+    """
+
+}
+
+
 // The external code must return it's contents as an object
 return this;
 

@@ -83,6 +83,9 @@ node('onmetal-provisioner') {
     // Run the tempest tests
     osa.run_tempest_smoke_tests('before_upgrade')
 
+    // Run the persistent resources creation
+    osa.run_persistent_resources_tests('create', 'persistent_create')
+
 }
 
 
@@ -107,6 +110,12 @@ node('onmetal-provisioner') {
  
     // Run the tempest tests
     osa.run_tempest_smoke_tests('after_upgrade')
+
+    // Run the persistent resources validation
+    osa.run_persistent_resources_tests('verify', 'persistent_verify')
+
+    // Cleanup the persiste resources
+    osa.run_persistent_resources_tests('cleanup', 'persistent_cleanup')
     
 }
 
