@@ -230,7 +230,7 @@ def stop_during_test(host_ip) {
     
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    sudo touch /usr/api.uptime.stop
+    sudo touch /usr/during.uptime.stop
     '''
     """
 }
