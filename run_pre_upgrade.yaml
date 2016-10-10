@@ -21,7 +21,7 @@
         - config
 
     - name: Run set-pr-upgrade script to modify run-upgrade.sh
-      script: set-pre-upgrade.sh "{{ main_path }}/scripts"
+      script: scripts/77-set-pre-upgrade "{{ main_path }}/scripts"
       tags:
         - config
 
