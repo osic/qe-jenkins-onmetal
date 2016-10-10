@@ -5,9 +5,15 @@ set -o xtrace
 
 # Use run-upgrade to run only minimum set of playbooks
 # Projects upgrade  prerequisites
-sed -i "/RUN_TASKS.\=..*./,$ d" ./run-upgrade.sh
+if [[ -z "${1}" ]]; then
+   _path=""
+else
+  _path="${1}"
+fi
 
-cat <<EOM >> ./run-upgrade.sh
+sed -i "/RUN_TASKS.\=..*./,$ d" $_path/run-upgrade.sh
+
+cat <<EOM >> $_path/run-upgrade.sh
         RUN_TASKS+=("\${UPGRADE_PLAYBOOKS}/ansible_fact_cleanup.yml")
         RUN_TASKS+=("\${UPGRADE_PLAYBOOKS}/deploy-config-changes.yml")
         RUN_TASKS+=("\${UPGRADE_PLAYBOOKS}/user-secrets-adjustment.yml")

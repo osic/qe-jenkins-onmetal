@@ -4,8 +4,9 @@
   hosts: all
   remote_user: root
   serial: 1
-  set_fact:
-    main_path: "{{ main_path | /opt/ansible }}"
+  vars:
+    #main_path: "{{ main_path | '/opt/ansible' }}"
+    main_path: '{% set main_path = main_path or "/opt/ansible" %}'
   
   tasks:
     - name: Checkout to a specific release
@@ -19,23 +20,14 @@
       tags:
         - config
 
-    - name: Get set-pre-upgrade.sh file
-      get_url:
-        url: https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/run-pre-upgrade.sh
-        dest: "{{ main_path }}"/scripts/set-pre-upgrade.sh
+    - name: Run set-pr-upgrade script to modify run-upgrade.sh
+      script: set-pre-upgrade.sh "{{ main_path }}/scripts"
       tags:
         - config
 
-    - name: Set pre-upgrade tasks on run-upgrade.sh
-      shell: set-pre-upgrade.sh
+    - name: Run modified run-upgrade.sh -- only pre-req plays
+      shell: export TERM=xterm; echo 'YES' | I_REALLY_KNOW_WHAT_I_AM_DOING=true ./run-upgrade.sh
       args:
-        chdir: "{{ main_path }}"/scripts/
-      tags:
-        - config
-
-    - name: Run pre-upgrade via modified run-upgrade.sh
-      shell: export TERM=xterm; echo 'YES' | I_REALLY_KNOW_WHAT_I_AM_DOING=true run-upgrade.sh
-      args:
-        chdir: "{{ main_path }}"/scripts
+        chdir: "{{ main_path }}/scripts/"
       tags:
         - pre-upgrade
