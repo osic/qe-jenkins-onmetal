@@ -217,11 +217,12 @@ def setup_during_test(host_ip) {
 }
 
 def start_during_test(host_ip) {
-    
+    //This test is normally called with python call_test.py -d
+    //but for testing it needs to not run with d.  This may cause it to run all day if no one stops it
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd during-upgrade-tests
-    python call_test.py -t 1
+    python call_test.py -t 5
     '''
     """
 }
