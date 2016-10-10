@@ -222,7 +222,7 @@ def install_persistent_resources_tests() {
 }
 
 
-def run_persistent_resources_tests(action = 'verify', results_file = 'results') {
+def run_persistent_resources_tests(action = 'verify') {
 
     String host_ip = get_onmetal_ip()
     sh """
@@ -230,7 +230,7 @@ def run_persistent_resources_tests(action = 'verify', results_file = 'results') 
     cd /root/tempest/
     stream_id=`cat .testrepository/next-stream`
     ostestr --regex persistent-${action}
-    cp .testrepository/\$stream_id /root/subunit/${results_file}
+    cp .testrepository/\$stream_id /root/subunit/persistent_${action}
     '''
     """
 
