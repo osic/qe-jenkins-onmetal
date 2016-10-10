@@ -206,6 +206,22 @@ def delete_onmetal(datacenter_tag) {
 }
 
 
+def install_persistent_resources_tests() {
+
+    String host_ip = get_onmetal_ip()
+
+    // Install Persistent Resources tests on the onMetal host
+    echo 'Installing Persisten Resources Tempest Plugin on the onMetal host'
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    git clone https://github.com/CasJ/openstack-upgrade-tests.git /root/persistent-resources-tests
+    pip install /root/persistent-resources-tests/
+    '''
+    """
+
+}
+
+
 def run_persistent_resources_tests(action = 'verify', results_file = 'results') {
 
     String host_ip = get_onmetal_ip()
