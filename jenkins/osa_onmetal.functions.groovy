@@ -124,7 +124,7 @@ def pre_project_upgrade(release = 'stable/newton', main_path = '/opt/openstack-a
    // Prepare system up to start with each project rolling upgrade
    // Tasks executed: repo, roles, and additional OSA tasks
    echo "Running the pre rolling upgrade. Going to release: ${release}"
-   ansiblePlaybook extras: "-e openstack-release=${release} main_path=${main_path}", inventory: 'hosts', playbook: 'run_pre_upgrade.yaml', sudoUser: null
+   ansiblePlaybook extras: "-e openstack_release=${release} main_path=${main_path}", inventory: 'hosts', playbook: 'run_pre_upgrade.yaml', sudoUser: null
 
 }
 
