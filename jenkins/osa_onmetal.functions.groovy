@@ -111,9 +111,38 @@ def deploy_openstack() {
 
 def upgrade_openstack(release = 'stable/mitaka') {
 
+    // End to End Process
     // Upgrade OSA to a specific release
     echo "Running the following playbook: upgrade_osa, to upgrade to the following release: ${release}"
     ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null  
+
+}
+
+
+def pre_project_upgrade(release = 'stable/newton', main_path = '/opt/openstack-ansible') {
+
+   // Prepare system up to start with each project rolling upgrade
+   // Tasks executed: repo, roles, and additional OSA tasks
+   echo "Running the pre rolling upgrade. Going to release: ${release}"
+   ansiblePlaybook extras: "-e openstack-release=${release} main_path=${main_path}", inventory: 'hosts', playbook: 'run_pre_upgrade.yaml', sudoUser: null
+
+}
+
+
+def upgrade_project(project, main_path = '/opt/openstack-ansible') {
+
+   // Upgrade nova project via OSA nova role
+   echo "Running ${project} project Rolling Upgrade E2E on the onMetal host"
+   sh """
+   cd ${main_path}/playbooks
+   if [ ${project} = 'keystone' ]; then
+       sudo ansible-playbook os-keystone-install.yml -i 'hosts'
+   if [ ${project} = 'nova' ]; then
+       sudo ansible-playbook os-nova-install.yml -i 'hosts'
+   if [ ${project} = 'swift' ]; then
+       sudo ansible-playbook os-swift-install.yml -i 'hosts'
+   fi
+   """
 
 }
 
