@@ -244,7 +244,7 @@ def install_persistent_resources_tests() {
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     git clone https://github.com/CasJ/openstack-upgrade-tests.git /root/persistent-resources-tests
-    pip install -e /root/persistent-resources-tests/
+    pip install /root/persistent-resources-tests/
     '''
     """
 
