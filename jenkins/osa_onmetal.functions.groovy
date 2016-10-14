@@ -201,7 +201,8 @@ def run_tempest_smoke_tests(results_file = 'results') {
     cd /root/tempest/
     stream_id=`cat .testrepository/next-stream`
     ostestr --no-slowest --regex smoke
-    cp .testrepository/\$stream_id /root/subunit/${results_file}
+    mkdir -p /root/subunit/smoke/
+    cp .testrepository/\$stream_id /root/subunit/smoke/${results_file}
     '''
     """
     
@@ -259,7 +260,8 @@ def run_persistent_resources_tests(action = 'verify') {
     cd /root/tempest/
     stream_id=`cat .testrepository/next-stream`
     ostestr --regex persistent-${action}
-    cp .testrepository/\$stream_id /root/subunit/persistent_${action}
+    mkdir -p /root/subunit/persistent_resources/
+    cp .testrepository/\$stream_id /root/subunit/persistent_resources/${action}
     '''
     """
 
