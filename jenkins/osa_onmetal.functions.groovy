@@ -240,7 +240,7 @@ def stop_during_test(host_ip) {
 def aggregate_results(host_ip) {
 
    sh """
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/during-upgrade-tests/output_json /usr/api.uptime.out
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/usr/api.uptime.out /home/ubuntu/output_json
     """
 }
     
