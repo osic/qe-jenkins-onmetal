@@ -237,6 +237,13 @@ def stop_during_test(host_ip) {
     """
 }
 
+def aggregate_results(host_ip) {
+
+   sh """
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/during-upgrade-tests/output_json /home/ubuntu/
+    """
+}
+    
 // The external code must return it's contents as an object
 return this;
 
