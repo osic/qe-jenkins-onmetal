@@ -208,8 +208,7 @@ def delete_onmetal(datacenter_tag) {
 def setup_during_test(host_ip) {
     
     sh """
-    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/during-upgrade-tests/output_json /home/ubuntu/workspace/Joshs_sandbox 
+    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root 
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
     cd during-upgrade-tests
     pip install -r requirements.txt
@@ -240,7 +239,7 @@ def stop_during_test(host_ip) {
 def aggregate_results(host_ip) {
 
    sh """
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/usr/api_uptime.out /home/ubuntu/output_json
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/output/ /home/ubuntu/output_json
     """
 }
     
