@@ -208,7 +208,7 @@ def delete_onmetal(datacenter_tag) {
 def setup_during_test(host_ip) {
     
     sh """
-    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root 
+    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox@3/during-upgrade-tests root@${host_ip}:/root 
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
     cd during-upgrade-tests
     pip install -r requirements.txt
