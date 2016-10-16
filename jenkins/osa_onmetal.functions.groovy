@@ -239,7 +239,7 @@ def stop_during_test(host_ip) {
 def aggregate_results(host_ip) {
 
    sh """
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/output_json
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     """
 }
     
