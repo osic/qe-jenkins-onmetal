@@ -238,9 +238,16 @@ def stop_during_test(host_ip) {
 
 def aggregate_results(host_ip) {
 
-   sh """
+    sh """
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     """
+}
+
+def parse_results() {
+  
+  sh"""
+  python elastic-benchmark/elastic_benchmark.upgrade.py
+  """ 
 }
     
 // The external code must return it's contents as an object
