@@ -255,13 +255,26 @@ def install_persistent_resources_tests() {
 def run_persistent_resources_tests(action = 'verify') {
 
     String host_ip = get_onmetal_ip()
+    String file_name
+
+    def stream_id = sh returnStdout: true, script: """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    echo `cat /root/tempest/.testrepository/next-stream`
+    """
+
+    if (action == 'verify') {
+        file_name = "${action}_${stream_id}"
+    } else {
+        file_name = action
+    }
+
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd /root/tempest/
     stream_id=`cat .testrepository/next-stream`
     ostestr --regex persistent-${action}
     mkdir -p /root/subunit/persistent_resources/
-    cp .testrepository/\$stream_id /root/subunit/persistent_resources/${action}
+    cp .testrepository/\$stream_id /root/subunit/persistent_resources/${file_name}
     '''
     """
 
