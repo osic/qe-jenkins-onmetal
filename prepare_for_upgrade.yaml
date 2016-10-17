@@ -5,7 +5,7 @@
   remote_user: root
   serial: 1
   vars:
-    main_path: '{% set main_path = main_path or "/opt/openstack-ansible" %}'
+    main_path: "{{ main_path | default('/opt/openstack-ansible') }}"
   
   tasks:
     - name: Checkout to a specific release
@@ -19,7 +19,7 @@
       tags:
         - config
 
-    - name: Run set-pr-upgrade script to modify run-upgrade.sh
+    - name: Run set-pre-upgrade script to modify run-upgrade.sh
       script: scripts/77-set-pre-upgrade "{{ main_path }}/scripts"
       tags:
         - config
