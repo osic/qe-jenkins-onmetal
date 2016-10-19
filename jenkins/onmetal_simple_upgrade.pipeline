@@ -89,6 +89,18 @@ node('onmetal-provisioner') {
 
 }
 
+// *******************************
+stage 'During Upgrade Start'
+// *******************************
+echo 'Starting tests that will run continuosly thru upgrade'
+node('onmetal-provisioner') {
+    
+    //Setup during upgrade test
+    osa.install_during_upgrade_tests(onmetal_ip)
+    
+    //Start During Upgrade Test
+    osa.start_during_test(onmetal_ip)
+}
 
 // *******************************
 stage 'Upgrade'
@@ -97,18 +109,18 @@ stage 'Upgrade'
 echo "Upgrading the OpenStack deployment from ${from_release} to ${to_release}"
 node('onmetal-provisioner') {
     
-    //Setup during upgrade test
-    osa.install_during_upgrade_tests(onmetal_ip)
-    
-    //Start During Upgrade Test
-    osa.start_during_test(onmetal_ip)
-    
     //Run upgrade
     osa.upgrade_openstack(to_release)
+}
+
+// *******************************
+stage 'During Upgrade Stop'
+// *******************************
+echo 'Starting tests that will run continuosly thru upgrade'
+node('onmetal-provisioner') {
 
     //Stop During Upgrade Test
     osa.stop_during_test(onmetal_ip)  
-    
 }
 
 
