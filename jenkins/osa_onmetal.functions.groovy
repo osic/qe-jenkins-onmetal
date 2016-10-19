@@ -280,7 +280,7 @@ def run_persistent_resources_tests(action = 'verify') {
 
 }
 
-def setup_during_test(host_ip) {
+def install_during_upgrade_tests(host_ip) {
     
     sh """
     scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root 
