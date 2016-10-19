@@ -345,7 +345,7 @@ def parse_results() {
     cd elastic-benchmark
     pip install elastic-benchmark
     cd ../
-    elastic-benchmark -a subunit/after-upgrade -b subunit/before-upgrade -u output/api_output.txt -d output/during_output.txt -p subunit/persistent-resources.txt
+    elastic-upgrade -a subunit/after-upgrade -b subunit/before-upgrade -u output/api_output.txt -d output/during_output.txt -p subunit/persistent-resources.txt
     """
 }
 
