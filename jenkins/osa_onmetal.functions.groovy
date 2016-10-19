@@ -281,6 +281,43 @@ def run_persistent_resources_tests(action = 'verify') {
 }
 
 
+def setup_api_uptime_tests(host_ip) {
+
+    // setup api uptime tests
+    sh """
+    ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
+    git clone https://github.com/osic/api-uptime-tests
+    cd api-uptime-tests
+    pip install -r requirements.txt
+    '''
+    """
+}
+
+
+def start_api_uptime_tests(host_ip) {
+
+    // run the API uptime tests
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    sudo rm -f /usr/api.uptime.stop
+    cd api-uptime-tests/api_uptime
+    python call_test.py -v
+    '''
+    """
+}
+
+
+def stop_api_uptime_tests(host_ip) {
+
+    // stop the API uptime tests
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    sudo touch /usr/api.uptime.stop
+    '''
+    """
+}
+
+
 // The external code must return it's contents as an object
 return this;
 

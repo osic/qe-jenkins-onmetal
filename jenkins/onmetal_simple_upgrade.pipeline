@@ -91,6 +91,31 @@ node('onmetal-provisioner') {
 
 
 // *******************************
+stage 'Start API Uptime Tests'
+// *******************************
+echo 'Starting API uptime tests which will run continuously thru an upgrade'
+node('onmetal-provisioner') {
+    
+    // Setup API uptime tests
+    osa.install_api_uptime_tests(onmetal_ip)
+    
+    // Start API uptime tests
+    osa.start_api_uptime_tests(onmetal_ip)
+}
+
+
+// *******************************
+stage 'Stop API Uptime Tests'
+// *******************************
+echo 'Stop API uptime tests'
+node('onmetal-provisioner') {
+
+    // Stop API uptime tests
+    osa.stop_api_uptime_tests(onmetal_ip)  
+}
+
+
+// *******************************
 stage 'Upgrade'
 // *******************************
 
