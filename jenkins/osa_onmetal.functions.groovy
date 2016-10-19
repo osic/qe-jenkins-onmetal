@@ -310,7 +310,6 @@ def stop_during_test(host_ip) {
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo touch /usr/during.uptime.stop
     '''
-    print "out of stop"
     """
 }
 
@@ -318,7 +317,6 @@ def aggregate_results(host_ip) {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
-    print "in aggregate"
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     """
 }
