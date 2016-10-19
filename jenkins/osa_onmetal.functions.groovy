@@ -298,7 +298,7 @@ def start_during_test(host_ip) {
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd during-upgrade-tests
-    python call_test.py -t 5
+    python call_test.py -t 1
     //put a wait here
     '''
     """
