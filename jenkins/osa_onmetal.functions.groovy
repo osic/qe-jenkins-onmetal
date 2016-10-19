@@ -281,6 +281,27 @@ def run_persistent_resources_tests(action = 'verify') {
 
 }
 
+def setup_parse_persistent_resources(host_ip){
+
+    sh """
+    git clone https://github.com/antwash/pr-parse.git
+    pip install -e /root/pr-parse 
+    """
+}
+
+def parse_persistent_resources_tests(host_ip){
+
+    sh """
+    for f in /root/subunit/persistent_resources/*
+    do 
+        cat \$f|subunit-1to2|subunit2csv > \$f.csv
+    done
+    cd /root/subunit/persistent_resources/
+    resource-parse --u . > /root/output/persistent-resource.txt
+    rm *.csv
+    """
+}
+
 
 def install_during_upgrade_tests(host_ip) {
     

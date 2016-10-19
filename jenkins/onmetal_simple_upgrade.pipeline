@@ -153,10 +153,17 @@ echo 'To be defined further'
 
 node('elasticsearch'){
     
-  //Pull data from onmetal places it on ES vm
-  osa.aggregate_results(onmetal_ip)
+    //Pull data from onmetal places it on ES vm
+    osa.aggregate_results(onmetal_ip)
 
+    //Parse persistent resouces data
+    osa.setup_parse_persistent_resources(onmetal_ip)
+    osa.parse_persistent_resources_tests(onmetal_ip)
+
+    //Push data to ES
+    
 }
+
 
 // *******************************
 stage 'Clean Up'
