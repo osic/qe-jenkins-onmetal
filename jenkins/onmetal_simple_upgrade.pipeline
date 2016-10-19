@@ -90,7 +90,7 @@ node('onmetal-provisioner') {
 }
 
 // *******************************
-stage 'During Upgrade Start'
+stage 'Start During Test'
 // *******************************
 echo 'Starting tests that will run continuosly thru upgrade'
 node('onmetal-provisioner') {
@@ -114,7 +114,7 @@ node('onmetal-provisioner') {
 }
 
 // *******************************
-stage 'During Upgrade Stop'
+stage 'Stop During Test'
 // *******************************
 echo 'Starting tests that will run continuosly thru upgrade'
 node('onmetal-provisioner') {
