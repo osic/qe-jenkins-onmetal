@@ -282,18 +282,19 @@ def run_persistent_resources_tests(action = 'verify') {
 
 def install_during_upgrade_tests(host_ip) {
     
+    //Setup during tests
     sh """
-    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox/during-upgrade-tests root@${host_ip}:/root 
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
-    cd during-upgrade-tests
+    git clone https://github.com/lamarwhitej/rolling-upgrades-during-test
+    cd rolling-upgrades-during-test
     pip install -r requirements.txt
     '''
     """
 }
 
 def start_during_test(host_ip) {
-    //This test is normally called with python call_test.py -d
-    //but for testing it needs to not run with d.  This may cause it to run all day if no one stops it
+    
+    //Run during test
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd during-upgrade-tests
@@ -305,6 +306,7 @@ def start_during_test(host_ip) {
 
 def stop_during_test(host_ip) {
     
+    //Stop during test by creating during.uptime.stop
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo touch /usr/during.uptime.stop
@@ -314,6 +316,7 @@ def stop_during_test(host_ip) {
 
 def aggregate_results(host_ip) {
 
+    //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     """
