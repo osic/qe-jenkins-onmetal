@@ -281,6 +281,73 @@ def run_persistent_resources_tests(action = 'verify') {
 
 }
 
+def setup_parse_persistent_resources(host_ip){
+
+    sh """
+    git clone https://github.com/antwash/pr-parse.git
+    pip install -e /root/pr-parse 
+    """
+}
+
+def parse_persistent_resources_tests(host_ip){
+
+    sh """
+    for f in /root/subunit/persistent_resources/*
+    do 
+        cat \$f|subunit-1to2|subunit2csv > \$f.csv
+    done
+    cd /root/subunit/persistent_resources/
+    resource-parse --u . > /root/output/persistent-resource.txt
+    rm *.csv
+    """
+}
+
+
+def install_during_upgrade_tests(host_ip) {
+    
+    //Setup during tests
+    sh """
+    ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
+    git clone https://github.com/osic/rolling-upgrades-during-test
+    cd rolling-upgrades-during-test
+    pip install -r requirements.txt
+    '''
+    """
+}
+
+
+def start_during_test(host_ip) {
+    
+    //Run during test
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    cd during-upgrade-tests
+    python call_test.py -t 1
+    '''
+    """ 
+}
+
+
+def stop_during_test(host_ip) {
+    
+    //Stop during test by creating during.uptime.stop
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    sudo touch /usr/during.uptime.stop
+    '''
+    """
+}
+
+
+def aggregate_results(host_ip) {
+
+    //Pull persistent, during, api, smoke results from onmetal to ES vm
+    sh """
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
+    """
+}
+
 
 // The external code must return it's contents as an object
 return this;

@@ -91,14 +91,40 @@ node('onmetal-provisioner') {
 
 
 // *******************************
+stage 'Upgrade Testing Start'
+// *******************************
+echo 'Starting tests that will run continuosly thru upgrade'
+node('onmetal-provisioner') {
+    
+    //Setup during upgrade test
+    osa.install_during_upgrade_tests(onmetal_ip)
+    
+    //Start During Upgrade Test
+    osa.start_during_test(onmetal_ip)
+}
+
+
+// *******************************
 stage 'Upgrade'
 // *******************************
 
 echo "Upgrading the OpenStack deployment from ${from_release} to ${to_release}"
 node('onmetal-provisioner') {
- 
+    
+    //Running upgrade
     osa.upgrade_openstack(to_release)
     
+}
+
+
+// *******************************
+stage 'Upgrade Testing Stop'
+// *******************************
+echo 'Starting tests that will run continuosly thru upgrade'
+node('onmetal-provisioner') {
+
+    //Stop During Upgrade Test
+    osa.stop_during_test(onmetal_ip)  
 }
 
 
@@ -122,7 +148,21 @@ node('onmetal-provisioner') {
 // *******************************
 stage 'Reporting'
 // *******************************
-echo 'To be defined'
+echo 'To be defined further'
+
+
+node('elasticsearch'){
+    
+    //Pull data from onmetal places it on ES vm
+    osa.aggregate_results(onmetal_ip)
+
+    //Parse persistent resouces data
+    osa.setup_parse_persistent_resources(onmetal_ip)
+    osa.parse_persistent_resources_tests(onmetal_ip)
+
+    //Push data to ES
+    
+}
 
 
 // *******************************
