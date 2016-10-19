@@ -166,6 +166,7 @@ node('elasticsearch'){
     osa.aggregate_results(onmetal_ip)
 
     //Push data to ES
+    osa.parse_results()
     
 }
 
