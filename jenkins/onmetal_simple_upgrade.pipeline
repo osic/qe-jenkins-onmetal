@@ -96,8 +96,18 @@ stage 'Upgrade'
 
 echo "Upgrading the OpenStack deployment from ${from_release} to ${to_release}"
 node('onmetal-provisioner') {
- 
+    
+    //Transfer During test and install requirements
+    osa.install_during_upgrade_tests(onmetal_ip)
+    
+    //Start During Upgrade Test
+    osa.start_during_test(onmetal_ip)
+    
+    //Run upgrade
     osa.upgrade_openstack(to_release)
+
+    //Stop During Upgrade Test
+    osa.stop_during_test(onmetal_ip)  
     
 }
 
@@ -114,15 +124,19 @@ node('onmetal-provisioner') {
 
     // Run the persistent resources validation then clean them up
     osa.run_persistent_resources_tests('verify')
-    osa.run_persistent_resources_tests('cleanup')
-    
+    osa.run_persistent_resources_tests('cleanup')  
 }
 
 
 // *******************************
 stage 'Reporting'
 // *******************************
-echo 'To be defined'
+echo 'To be defined further'
+node('elasticsearch'){
+  git 'https://github.com/lamarwhitej/elastic-benchmark.git'
+  osa.aggregate_results(onmetal_ip)
+  //osa.parse_results()
+}
 
 
 // *******************************
