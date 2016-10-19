@@ -281,31 +281,12 @@ def run_persistent_resources_tests(action = 'verify') {
 
 }
 
-def setup_parse_persistent_resources(host_ip){
 
-    sh """
-    git clone https://github.com/antwash/pr-parse.git
-    pip install -e /root/pr-parse 
-    """
-}
-
-def parse_persistent_resources_tests(host_ip){
-
-    sh """
-    for f in /root/subunit/persistent_resources/*
-    do 
-        cat \$f|subunit-1to2|subunit2csv > \$f.csv
-    done
-    cd /root/subunit/persistent_resources/
-    resource-parse --u . > /root/output/persistent-resource.txt
-    rm *.csv
-    """
-}
-
-
-def install_during_upgrade_tests(host_ip) {
+def install_during_upgrade_tests() {
     
-    //Setup during tests
+    String host_ip = get_onmetal_ip()
+
+    // Setup during tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
     git clone https://github.com/osic/rolling-upgrades-during-test
@@ -316,9 +297,11 @@ def install_during_upgrade_tests(host_ip) {
 }
 
 
-def start_during_test(host_ip) {
+def start_during_test() {
     
-    //Run during test
+    String host_ip = get_onmetal_ip()
+    
+    // Run during test
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd during-upgrade-tests
@@ -328,9 +311,11 @@ def start_during_test(host_ip) {
 }
 
 
-def stop_during_test(host_ip) {
+def stop_during_test() {
     
-    //Stop during test by creating during.uptime.stop
+    String host_ip = get_onmetal_ip()
+
+    // Stop during test by creating during.uptime.stop
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo touch /usr/during.uptime.stop
@@ -339,7 +324,9 @@ def stop_during_test(host_ip) {
 }
 
 
-def aggregate_results(host_ip) {
+def aggregate_results() {
+
+    String host_ip = get_onmetal_ip()
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
