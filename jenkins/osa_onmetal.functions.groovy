@@ -335,6 +335,18 @@ def aggregate_results() {
     """
 }
 
+def parse_results() {
+
+    String host_ip = get_onmetal_ip()
+
+    //Pull persistent, during, api, smoke results from onmetal to ES vm
+    sh """
+    git clone https://github.com/lamarwhitej/elastic-benchmark
+    pip install elastic-benchmark
+    elastic-benchmark -a subunit/after-upgrade -b subunit/before-upgrade -u output/api_output.txt -d output/during_output.txt -p subunit/persistent-resources.txt
+    """
+}
+
 
 // The external code must return it's contents as an object
 return this;
