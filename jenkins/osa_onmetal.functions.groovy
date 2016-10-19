@@ -280,6 +280,45 @@ def run_persistent_resources_tests(action = 'verify') {
 
 }
 
+def setup_during_test(host_ip) {
+    
+    sh """
+    scp -o StrictHostKeyChecking=no -r /home/ubuntu/workspace/Joshs_sandbox@3/during-upgrade-tests root@${host_ip}:/root 
+    ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
+    cd during-upgrade-tests
+    pip install -r requirements.txt
+    '''
+    """
+}
+
+def start_during_test(host_ip) {
+    //This test is normally called with python call_test.py -d
+    //but for testing it needs to not run with d.  This may cause it to run all day if no one stops it
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    cd during-upgrade-tests
+    python call_test.py -d
+    //put a wait here
+    '''
+    """
+}
+
+def stop_during_test(host_ip) {
+    
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    sudo touch /usr/during.uptime.stop
+    '''
+    """
+}
+
+def aggregate_results(host_ip) {
+
+    sh """
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
+    """
+}
+
 
 // The external code must return it's contents as an object
 return this;
