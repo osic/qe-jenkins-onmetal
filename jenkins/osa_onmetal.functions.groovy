@@ -244,7 +244,7 @@ def install_persistent_resources_tests() {
     echo 'Installing Persisten Resources Tempest Plugin on the onMetal host'
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/CasJ/openstack-upgrade-tests.git /root/persistent-resources-tests
+    git clone https://github.com/osic/persistent-resources-tests.git /root/persistent-resources-tests
     pip install /root/persistent-resources-tests/
     '''
     """
@@ -260,6 +260,7 @@ def run_persistent_resources_tests(action = 'verify') {
     def stream_id = sh returnStdout: true, script: """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     echo `cat /root/tempest/.testrepository/next-stream`
+    '''
     """
 
     if (action == 'verify') {
