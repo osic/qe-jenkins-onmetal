@@ -97,7 +97,7 @@ stage 'Upgrade'
 echo "Upgrading the OpenStack deployment from ${from_release} to ${to_release}"
 node('onmetal-provisioner') {
     
-    //Transfer During test and install requirements
+    //Setup during upgrade test
     osa.install_during_upgrade_tests(onmetal_ip)
     
     //Start During Upgrade Test
@@ -132,8 +132,11 @@ node('onmetal-provisioner') {
 stage 'Reporting'
 // *******************************
 echo 'To be defined further'
+
+
 node('elasticsearch'){
-  git 'https://github.com/lamarwhitej/elastic-benchmark.git'
+    
+  //Pull data from onmetal places it on ES vm
   osa.aggregate_results(onmetal_ip)
   //osa.parse_results()
 }
