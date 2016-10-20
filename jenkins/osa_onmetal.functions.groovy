@@ -336,7 +336,9 @@ def aggregate_results() {
 }
 
 
-def setup_api_uptime_tests(host_ip) {
+def setup_api_uptime_tests() {
+
+    host_ip = get_onmetal_ip()
 
     // setup api uptime tests
     sh """
@@ -349,7 +351,9 @@ def setup_api_uptime_tests(host_ip) {
 }
 
 
-def start_api_uptime_tests(host_ip) {
+def start_api_uptime_tests() {
+
+    host_ip = get_onmetal_ip()
 
     // run the API uptime tests
     sh """
@@ -362,7 +366,9 @@ def start_api_uptime_tests(host_ip) {
 }
 
 
-def stop_api_uptime_tests(host_ip) {
+def stop_api_uptime_tests() {
+
+    host_ip = get_onmetal_ip()
 
     // stop the API uptime tests
     sh """
