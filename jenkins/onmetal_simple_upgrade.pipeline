@@ -103,10 +103,10 @@ node('onmetal-provisioner') {
     osa.start_during_test()
 
     // Setup API uptime tests
-    osa.install_api_uptime_tests(onmetal_ip)
+    osa.install_api_uptime_tests()
     
     // Start API uptime tests
-    osa.start_api_uptime_tests(onmetal_ip)
+    osa.start_api_uptime_tests()
 }
 
 
@@ -133,7 +133,7 @@ node('onmetal-provisioner') {
     osa.stop_during_test()  
 
     // Stop API uptime tests
-    osa.stop_api_uptime_tests(onmetal_ip)  
+    osa.stop_api_uptime_tests()  
 }
 
 
