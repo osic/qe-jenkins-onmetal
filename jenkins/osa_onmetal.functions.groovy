@@ -400,7 +400,7 @@ def parse_results() {
     sh """
     git clone https://github.com/lamarwhitej/elastic-benchmark
     sudo pip install -e elastic-benchmark
-    elastic-upgrade -a subunit/after-upgrade -b subunit/before-upgrade -u output/api_output.txt -d output/during_output.txt -p subunit/persistent-resources.txt
+    elastic-upgrade -u output/output.txt -d output/during_output.txt -p subunit/persistent_create -o subunit/persistent_create2 -b subunit/before_upgrade -a subunit/after_upgrade
     """
 }
 
