@@ -327,20 +327,6 @@ def aggregate_results() {
     """
 }
 
-def parse_results() {
-
-    String host_ip = get_onmetal_ip()
-
-    //Pull persistent, during, api, smoke results from onmetal to ES vm
-    sh """
-    git clone https://github.com/lamarwhitej/elastic-benchmark
-    cd elastic-benchmark
-    pip install elastic-benchmark
-    cd ../
-    elastic-upgrade -a subunit/after-upgrade -b subunit/before-upgrade -u output/api_output.txt -d output/during_output.txt -p subunit/persistent-resources.txt
-    """
-}
-
 
 def setup_api_uptime_tests() {
 
@@ -390,7 +376,7 @@ def parse_results() {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
-    git clone https://github.com/lamarwhitej/elastic-benchmark
+    git clone https://github.com/arithx/elastic-benchmark
     sudo pip install -e elastic-benchmark
     elastic-upgrade -u output/output.txt -d output/during_output.txt -p subunit/persistent_resources/before_upgrade -o subunit/persistent_resources/after_upgrade -b subunit/before_upgrade -a subunit/after_upgrade
     """
