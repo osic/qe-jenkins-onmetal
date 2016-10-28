@@ -376,9 +376,9 @@ def parse_results() {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
-    git clone https://github.com/arithx/elastic-benchmark
+    git clone https://github.com/osic/elastic-benchmark
     sudo pip install -e elastic-benchmark
-    elastic-upgrade -u output/output.txt -d output/during_output.txt -p subunit/persistent_resources/before_upgrade -o subunit/persistent_resources/after_upgrade -b subunit/before_upgrade -a subunit/after_upgrade
+    elastic-upgrade -u output/output.txt -d output/during_output.txt -p output/persistent_resource.txt -b subunit/before_upgrade -a subunit/after_upgrade
     """
 }
 
