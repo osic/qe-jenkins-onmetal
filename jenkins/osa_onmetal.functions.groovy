@@ -296,9 +296,9 @@ def start_during_test() {
     // Run during test
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd during-upgrade-tests
-    python call_test.py -t 1
-    '''
+    cd rolling-upgrades-during-test
+    python call_test.py -d
+    ''' &
     """ 
 }
 
@@ -367,6 +367,18 @@ def stop_api_uptime_tests() {
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo touch /usr/api.uptime.stop
     '''
+    """
+}
+
+def parse_results() {
+
+    String host_ip = get_onmetal_ip()
+
+    //Pull persistent, during, api, smoke results from onmetal to ES vm
+    sh """
+    git clone https://github.com/osic/elastic-benchmark
+    sudo pip install -e elastic-benchmark
+    elastic-upgrade -u output/output.txt -d output/during_output.txt -p output/persistent_resource.txt -b subunit/before_upgrade -a subunit/after_upgrade
     """
 }
 
