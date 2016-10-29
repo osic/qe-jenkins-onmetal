@@ -328,7 +328,7 @@ def aggregate_results() {
 }
 
 
-def setup_api_uptime_tests() {
+def install_api_uptime_tests() {
 
     host_ip = get_onmetal_ip()
 
