@@ -335,7 +335,7 @@ def install_api_uptime_tests() {
     // setup api uptime tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
-    git clone https://github.com/osic/api-uptime-tests
+    git clone https://github.com/osic/api_uptime
     cd api-uptime-tests
     pip install -r requirements.txt
     '''
