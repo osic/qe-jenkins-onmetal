@@ -374,7 +374,7 @@ def setup_parse_persistent_resources(){
     
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/osic/persistent-resources-tests-parse.git
+    git clone https://github.com/osic/persistent-resources-tests-parse.git /root/persistent-resources-tests-parse
     pip install -e /root/persistent-resources-tests-parse
     '''
     """
