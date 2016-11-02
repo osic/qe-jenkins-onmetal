@@ -177,7 +177,7 @@ def configure_tempest() {
     // Configure tempest based on the OSA deployment
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id reseller_admin_role"
+    keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
     for key in \$keys
     do
         a="\${key} ="
