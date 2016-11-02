@@ -194,9 +194,11 @@ def configure_tempest() {
 def run_tempest_smoke_tests(results_file = 'results') {
 
     String host_ip = get_onmetal_ip()
+    String newline = "\n"
+    def tempest_output, failures
 
     // Run the tests and store the results in ~/subunit/before
-    sh """
+    tempest_output = sh returnStdout: true, script: """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd /root/tempest/
     stream_id=`cat .testrepository/next-stream`
@@ -205,6 +207,23 @@ def run_tempest_smoke_tests(results_file = 'results') {
     cp .testrepository/\$stream_id /root/subunit/smoke/${results_file}
     '''
     """
+    // Make sure there are no failures in the smoke tests, if there are stop the workflow
+    println tempest_output
+    if (tempest_output.contains('- Failed:') == true) {
+
+	failures = tempest_output.substring(tempest_output.indexOf('- Failed:') + 10)
+        failures = failures.substring(0,failures.indexOf(newline)).toInteger()
+        if (failures > 1) {
+            error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
+        } else {
+            println 'The Tempest smoke tests were successfull.'
+        }
+
+    } else {
+
+        error 'There was an error running the smoke tests, stopping the pipeline.'
+
+    }
     
 }
 
