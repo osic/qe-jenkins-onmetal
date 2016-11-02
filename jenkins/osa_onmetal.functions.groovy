@@ -316,9 +316,7 @@ def stop_during_test() {
 }
 
 
-def aggregate_results() {
-
-    String host_ip = get_onmetal_ip()
+def aggregate_results(host_ip) {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
