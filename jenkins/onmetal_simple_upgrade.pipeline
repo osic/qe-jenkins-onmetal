@@ -152,6 +152,10 @@ node('onmetal-provisioner') {
     osa.run_persistent_resources_tests('verify', 'after_upgrade')
     osa.run_persistent_resources_tests('cleanup')
     
+    // Pase persistent resource results
+    osa.setup_parse_persistent_resources()
+    osa.parse_persistent_resources_tests()
+    
 }
 
 
