@@ -281,7 +281,7 @@ def install_during_upgrade_tests() {
     // Setup during tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
-    mkdir output
+    mkdir -p /root/output
     git clone https://github.com/osic/rolling-upgrades-during-test
     cd rolling-upgrades-during-test
     pip install -r requirements.txt
@@ -336,6 +336,7 @@ def install_api_uptime_tests() {
     // setup api uptime tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
+    mkdir -p /root/output
     git clone https://github.com/osic/api_uptime
     cd api_uptime
     pip install -r requirements.txt
