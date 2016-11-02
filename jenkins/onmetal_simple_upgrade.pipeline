@@ -150,8 +150,7 @@ node('onmetal-provisioner') {
 
     // Run the persistent resources validation then clean them up
     osa.run_persistent_resources_tests('verify', 'after_upgrade')
-    osa.run_persistent_resources_tests('cleanup')
-    
+    osa.run_persistent_resources_tests('cleanup')    
 }
 
 
@@ -160,6 +159,12 @@ stage 'Reporting'
 // *******************************
 echo 'To be defined further'
 
+node('onmetal-provisioner'){
+    
+    // Pase persistent resource results
+    osa.setup_parse_persistent_resources()
+    osa.parse_persistent_resources_tests()
+}
 
 node('elasticsearch'){
     
