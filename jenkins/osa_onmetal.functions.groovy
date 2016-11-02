@@ -281,6 +281,7 @@ def install_during_upgrade_tests() {
     // Setup during tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
+    mkdir output
     git clone https://github.com/osic/rolling-upgrades-during-test
     cd rolling-upgrades-during-test
     pip install -r requirements.txt
