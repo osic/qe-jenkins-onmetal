@@ -352,8 +352,8 @@ def start_api_uptime_tests() {
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
     cd api_uptime/api_uptime
-    python call_test.py -v
-    '''
+    python call_test.py -d -s nova -o ../../output
+    ''' &
     """
 }
 
