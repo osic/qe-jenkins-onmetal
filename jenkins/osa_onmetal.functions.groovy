@@ -330,7 +330,7 @@ def aggregate_results() {
 
 def install_api_uptime_tests() {
 
-    host_ip = get_onmetal_ip()
+    String host_ip = get_onmetal_ip()
 
     // setup api uptime tests
     sh """
@@ -345,7 +345,7 @@ def install_api_uptime_tests() {
 
 def start_api_uptime_tests() {
 
-    host_ip = get_onmetal_ip()
+    String host_ip = get_onmetal_ip()
 
     // run the API uptime tests
     sh """
@@ -360,7 +360,7 @@ def start_api_uptime_tests() {
 
 def stop_api_uptime_tests() {
 
-    host_ip = get_onmetal_ip()
+    String host_ip = get_onmetal_ip()
 
     // stop the API uptime tests
     sh """
@@ -371,8 +371,6 @@ def stop_api_uptime_tests() {
 }
 
 def parse_results() {
-
-    String host_ip = get_onmetal_ip()
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
