@@ -389,6 +389,36 @@ def stop_api_uptime_tests() {
     """
 }
 
+def setup_parse_persistent_resources(){
+    
+    String host_ip = get_onmetal_ip()
+    
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    git clone https://github.com/osic/persistent-resources-tests-parse.git /root/persistent-resources-tests-parse
+    pip install /root/persistent-resources-tests-parse/
+    '''
+    """
+}
+
+def parse_persistent_resources_tests(){
+    
+    String host_ip = get_onmetal_ip()
+
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    
+    for f in /root/subunit/persistent_resources/*
+    do 
+        cat \$f|subunit-1to2|subunit2csv > \$f.csv
+    done
+    cd /root/subunit/persistent_resources/
+    resource-parse --u . > /root/output/persistent-resource.txt
+    rm *.csv
+    '''
+    """
+}
+
 def parse_results() {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
