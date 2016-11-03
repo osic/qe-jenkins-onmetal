@@ -365,14 +365,12 @@ def install_api_uptime_tests() {
 def start_api_uptime_tests() {
 
     String host_ip = get_onmetal_ip()
-
-    // run the API uptime tests
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
     cd api_uptime/api_uptime
-    python call_test.py -v
-    '''
+    python call_test.py -v -d -s nova,swift,keystone -o /root/output
+    ''' &
     """
 }
 
