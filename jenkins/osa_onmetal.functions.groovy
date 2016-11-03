@@ -395,7 +395,7 @@ def parse_results() {
     sh """
     git clone https://github.com/osic/elastic-benchmark
     sudo pip install -e elastic-benchmark
-    elastic-upgrade -u output/output.txt -d output/during_output.txt -p output/persistent_resource.txt -b subunit/before_upgrade -a subunit/after_upgrade
+    elastic-upgrade -u output/output.txt -d output/during_output.txt -p output/persistent_resource.txt -b subunit/smoke/before_upgrade -a subunit/smoke/after_upgrade
     """
 }
 
