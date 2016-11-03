@@ -346,16 +346,11 @@ def install_api_uptime_tests() {
 def start_api_uptime_tests() {
 
     String host_ip = get_onmetal_ip()
-
-    // run the API uptime tests.  Note that the output directory goes up 2
-    // levels.  That is done to ensure that the output file goes into the root
-    // for this project, rather than buried in the api_uptime/api_uptime
-    // subdirectory.
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
     cd api_uptime/api_uptime
-    python call_test.py -d -s nova,swift,keystone -o ../../output
+    python call_test.py -v -d -s nova,swift,keystone -o /root/output
     ''' &
     """
 }
