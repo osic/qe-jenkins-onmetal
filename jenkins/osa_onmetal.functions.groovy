@@ -214,6 +214,8 @@ def run_tempest_smoke_tests(results_file = 'results') {
 	failures = tempest_output.substring(tempest_output.indexOf('- Failed:') + 10)
         failures = failures.substring(0,failures.indexOf(newline)).toInteger()
         if (failures > 1) {
+	    println 'Parsing failed smoke ' + results_file
+	    aggregate_parse_failed_smoke(results_file)
             error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
         } else {
             println 'The Tempest smoke tests were successfull.'
@@ -369,7 +371,7 @@ def start_api_uptime_tests() {
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
     cd api_uptime/api_uptime
-    python call_test.py -v -d -s nova,swift,keystone -o /root/output
+    python call_test.py -v -d -s nova,swift -o /root/output/api.uptime.out
     ''' &
     """
 }
@@ -423,8 +425,39 @@ def parse_results() {
     sh """
     git clone https://github.com/osic/elastic-benchmark
     sudo pip install -e elastic-benchmark
-    elastic-upgrade -u output/output.txt -d output/during_output.txt -p output/persistent_resource.txt -b subunit/smoke/before_upgrade -a subunit/smoke/after_upgrade
+    elastic-upgrade -u output/api.uptime.out -d output/during_output.txt -p output/persistent_resource.txt -b subunit/smoke/before_upgrade -a subunit/smoke/after_upgrade
     """
+}
+
+def aggregate_parse_failed_smoke(results_file) {
+	
+    String host_ip = get_onmetal_ip()
+
+    //Pull persistent, during, api, smoke results from onmetal to ES vm
+    sh """
+    ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
+    git clone https://github.com/osic/elastic-benchmark
+    sudo pip install -e elastic-benchmark
+    '''
+    """
+
+	if (results_file == 'after_upgrade') {
+	    //Pull persistent, during, api, smoke results from onmetal to ES 
+	    sh """
+            ssh -o StrictHostKeyChecking=no ubuntu@<provisioner_ip> '''
+	    elastic-upgrade -u output/api.uptime.out -d output/during_output.txt -p output/persistent_resource.txt -b subunit/smoke/before_upgrade -a subunit/smoke/after_upgrade
+	    ''''
+	    """
+	}
+	else {
+	    sh """
+            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+	    elastic-upgrade -b subunit/smoke/before_upgrade
+	    '''
+	    """
+	}
 }
 
 
