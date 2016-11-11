@@ -161,7 +161,7 @@ def configure_tempest() {
     testr init
     cd /root/tempest/etc/
     wget https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/tempest.conf
-    mkdir /root/subunit
+    mkdir -p /root/subunit
     '''
     """
 
@@ -214,6 +214,8 @@ def run_tempest_smoke_tests(results_file = 'results') {
 	failures = tempest_output.substring(tempest_output.indexOf('- Failed:') + 10)
         failures = failures.substring(0,failures.indexOf(newline)).toInteger()
         if (failures > 1) {
+	    println 'Parsing failed smoke'
+	    aggregate_parse_failed_smoke(host_ip, results_file)
             error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
         } else {
             println 'The Tempest smoke tests were successfull.'
@@ -260,10 +262,10 @@ def install_persistent_resources_tests() {
     String host_ip = get_onmetal_ip()
 
     // Install Persistent Resources tests on the onMetal host
-    echo 'Installing Persisten Resources Tempest Plugin on the onMetal host'
+    echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/osic/persistent-resources-tests.git /root/persistent-resources-tests
+    git clone https://github.com/antwash/persistent-resources-tests.git /root/persistent-resources-tests
     pip install /root/persistent-resources-tests/
     '''
     """
@@ -294,7 +296,7 @@ def run_persistent_resources_tests(action = 'verify', results_file = null) {
 
 
 def install_during_upgrade_tests() {
-    
+	
     String host_ip = get_onmetal_ip()
 
     // Setup during tests
@@ -310,7 +312,7 @@ def install_during_upgrade_tests() {
 
 
 def start_during_test() {
-    
+	
     String host_ip = get_onmetal_ip()
     
     // Run during test
@@ -324,7 +326,7 @@ def start_during_test() {
 
 
 def stop_during_test() {
-    
+	
     String host_ip = get_onmetal_ip()
 
     // Stop during test by creating during.uptime.stop
@@ -347,14 +349,14 @@ def aggregate_results(host_ip) {
 
 
 def install_api_uptime_tests() {
-
+	
     String host_ip = get_onmetal_ip()
 
     // setup api uptime tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
     mkdir -p /root/output
-    git clone https://github.com/osic/api_uptime
+    git clone https://github.com/osic/api_uptime.git
     cd api_uptime
     pip install -r requirements.txt
     '''
@@ -363,20 +365,21 @@ def install_api_uptime_tests() {
 
 
 def start_api_uptime_tests() {
-
+	
     String host_ip = get_onmetal_ip()
+	
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
     cd api_uptime/api_uptime
-    python call_test.py -v -d -s nova,swift,keystone -o /root/output
+    python call_test.py -v -d -s nova,swift -o /root/output/api.uptime.out
     ''' &
     """
 }
 
 
 def stop_api_uptime_tests() {
-
+	
     String host_ip = get_onmetal_ip()
 
     // stop the API uptime tests
@@ -399,6 +402,7 @@ def setup_parse_persistent_resources(){
     """
 }
 
+
 def parse_persistent_resources_tests(){
     
     String host_ip = get_onmetal_ip()
@@ -411,23 +415,52 @@ def parse_persistent_resources_tests(){
         cat \$f|subunit-1to2|subunit2csv > \$f.csv
     done
     cd /root/subunit/persistent_resources/
-    resource-parse --u . > /root/output/persistent-resource.txt
+    resource-parse --u . > /root/output/persistent_resource.txt
     rm *.csv
     '''
     """
 }
 
-def parse_results() {
+
+def aggregate_parse_failed_smoke(host_ip, results_file) {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
+    ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
     git clone https://github.com/osic/elastic-benchmark
     sudo pip install -e elastic-benchmark
-    elastic-upgrade -u output/output.txt -d output/during_output.txt -p output/persistent_resource.txt -b subunit/smoke/before_upgrade -a subunit/smoke/after_upgrade
+    '''
     """
+
+	if (results_file == 'after_upgrade') {
+	    //Pull persistent, during, api, smoke results from onmetal to ES 
+	    sh """
+            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+	    elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+	    ''''
+	    """
+	}
+	else {
+	    sh """
+            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+	    elastic-upgrade -b /home/ubuntu/subunit/smoke/before_upgrade
+	    '''
+	    """
+	}
+}
+
+
+def parse_results() {
+	
+	sh """
+	git clone https://github.com/osic/elastic-benchmark
+	sudo pip install -e elastic-benchmark
+	elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+	"""
 }
 
 
 // The external code must return it's contents as an object
 return this;
-
