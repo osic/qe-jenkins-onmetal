@@ -296,7 +296,7 @@ def run_persistent_resources_tests(action = 'verify', results_file = null) {
 
 
 def install_during_upgrade_tests() {
-	
+
     String host_ip = get_onmetal_ip()
 
     // Setup during tests
@@ -312,7 +312,7 @@ def install_during_upgrade_tests() {
 
 
 def start_during_test() {
-	
+
     String host_ip = get_onmetal_ip()
     
     // Run during test
@@ -326,7 +326,7 @@ def start_during_test() {
 
 
 def stop_during_test() {
-	
+
     String host_ip = get_onmetal_ip()
 
     // Stop during test by creating during.uptime.stop
@@ -349,7 +349,7 @@ def aggregate_results(host_ip) {
 
 
 def install_api_uptime_tests() {
-	
+
     String host_ip = get_onmetal_ip()
 
     // setup api uptime tests
@@ -365,7 +365,7 @@ def install_api_uptime_tests() {
 
 
 def start_api_uptime_tests() {
-	
+
     String host_ip = get_onmetal_ip()
 	
     sh """
@@ -379,7 +379,7 @@ def start_api_uptime_tests() {
 
 
 def stop_api_uptime_tests() {
-	
+
     String host_ip = get_onmetal_ip()
 
     // stop the API uptime tests
@@ -402,7 +402,6 @@ def setup_parse_persistent_resources(){
     """
 }
 
-
 def parse_persistent_resources_tests(){
     
     String host_ip = get_onmetal_ip()
@@ -420,7 +419,6 @@ def parse_persistent_resources_tests(){
     '''
     """
 }
-
 
 def aggregate_parse_failed_smoke(host_ip, results_file) {
 
