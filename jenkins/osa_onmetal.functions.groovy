@@ -265,7 +265,7 @@ def install_persistent_resources_tests() {
     echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/antwash/persistent-resources-tests.git /root/persistent-resources-tests
+    git clone https://github.com/osic/persistent-resources-tests.git /root/persistent-resources-tests
     pip install /root/persistent-resources-tests/
     '''
     """
