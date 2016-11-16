@@ -2,7 +2,7 @@
 
 def osa, common
 String workspace_dir 
-String onmetal_ip
+String onmetal_ip, elasticsearch_ip
 
 // Jenkins must provide these two variables as parameters or the build 
 // will fail:
@@ -30,6 +30,13 @@ node('master') {
         osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
     }
     
+}
+
+node('elasticsearch') {
+
+    // Get the IP of the Elasticsearch/Kibana server
+    elasticsearch_ip = sh returnStdout: true, script: 'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1'
+
 }
 
 node('onmetal-provisioner') {
@@ -81,7 +88,7 @@ echo 'Validating the OpenStack deployment'
 node('onmetal-provisioner') {
 
     // Run the tempest tests
-    osa.run_tempest_smoke_tests('before_upgrade')
+    osa.run_tempest_smoke_tests('before_upgrade', elasticsearch_ip)
 
     // Install and run the persistent resources creation
     osa.install_persistent_resources_tests()
@@ -146,7 +153,7 @@ echo 'Validating the OpenStack deployment after the upgrade'
 node('onmetal-provisioner') {
  
     // Run the tempest tests
-    osa.run_tempest_smoke_tests('after_upgrade')
+    osa.run_tempest_smoke_tests('after_upgrade', elasticsearch_ip)
 
     // Run the persistent resources validation then clean them up
     osa.run_persistent_resources_tests('verify', 'after_upgrade')

@@ -191,7 +191,7 @@ def configure_tempest() {
 }
 
 
-def run_tempest_smoke_tests(results_file = 'results') {
+def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 
     String host_ip = get_onmetal_ip()
     String newline = "\n"
@@ -215,7 +215,9 @@ def run_tempest_smoke_tests(results_file = 'results') {
         failures = failures.substring(0,failures.indexOf(newline)).toInteger()
         if (failures > 1) {
 	    println 'Parsing failed smoke'
-	    aggregate_parse_failed_smoke(host_ip, results_file)
+            if (elasticsearch_ip != null) {
+	        aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip)
+            }
             error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
         } else {
             println 'The Tempest smoke tests were successfull.'
@@ -420,11 +422,11 @@ def parse_persistent_resources_tests(){
     """
 }
 
-def aggregate_parse_failed_smoke(host_ip, results_file) {
+def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
-    ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+    ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
     git clone https://github.com/osic/elastic-benchmark
