@@ -408,11 +408,6 @@ def parse_persistent_resources_tests(){
 
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    
-    for f in /root/subunit/persistent_resources/*
-    do 
-        cat \$f|subunit-1to2|subunit2csv > \$f.csv
-    done
     cd /root/subunit/persistent_resources/
     resource-parse --u . > /root/output/persistent_resource.txt
     rm *.csv
