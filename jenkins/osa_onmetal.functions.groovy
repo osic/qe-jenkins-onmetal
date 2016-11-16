@@ -437,14 +437,14 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 	if (results_file == 'after_upgrade') {
 	    //Pull persistent, during, api, smoke results from onmetal to ES 
 	    sh """
-            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+            ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
 	    elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
 	    ''''
 	    """
 	}
 	else {
 	    sh """
-            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.12 '''
+            ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
 	    elastic-upgrade -b /home/ubuntu/subunit/smoke/before_upgrade
 	    '''
 	    """
