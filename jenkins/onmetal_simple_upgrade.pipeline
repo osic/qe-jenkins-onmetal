@@ -36,6 +36,7 @@ node('elasticsearch') {
 
     // Get the IP of the Elasticsearch/Kibana server
     elasticsearch_ip = sh returnStdout: true, script: 'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1'
+    echo "The IP address of the ElasticSearch server is: ${elasticsearch_ip}"
 
 }
 
@@ -115,6 +116,7 @@ node('onmetal-provisioner') {
     
     // Start API uptime tests
     osa.start_api_uptime_tests()
+
 }
 
 
@@ -142,6 +144,7 @@ node('onmetal-provisioner') {
 
     // Stop API uptime tests
     osa.stop_api_uptime_tests()  
+
 }
 
 
@@ -158,19 +161,21 @@ node('onmetal-provisioner') {
     // Run the persistent resources validation then clean them up
     osa.run_persistent_resources_tests('verify', 'after_upgrade')
     osa.run_persistent_resources_tests('cleanup')    
+
 }
 
 
 // *******************************
 stage 'Reporting'
 // *******************************
-echo 'To be defined further'
 
+echo 'Parsing the test results and submitting them to ElasticSearch'
 node('onmetal-provisioner'){
     
     // Pase persistent resource results
     osa.setup_parse_persistent_resources()
     osa.parse_persistent_resources_tests()
+
 }
 
 node('elasticsearch'){
