@@ -453,6 +453,9 @@ def parse_results() {
 	git clone https://github.com/osic/elastic-benchmark
 	sudo pip install -e elastic-benchmark
 	elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+        elastic-upgrade -s /home/ubuntu/output/keystone_status.txt
+	elastic-upgrade -s /home/ubuntu/output/nova_status.txt
+	elastic-upgrade -s /home/ubuntu/output/swift_status.txt
 	"""
 }
 
