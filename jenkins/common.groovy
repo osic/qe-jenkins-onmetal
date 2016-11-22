@@ -34,26 +34,33 @@ def wait_for_ping(host_ip, timeout_sec) {
 
 }
 
+def get_server_ip() {
 
-def get_elasticsearch_server_info() {
+    String server_ip
 
-    String elasticsearch_ip, elasticsearch_pkey
-
-    // Get the IP of the Elasticsearch/Kibana server
-    elasticsearch_ip = sh returnStdout: true, script: 'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1'
-    echo "The IP address of the ElasticSearch server is: ${elasticsearch_ip}"
-
-    // Get the public key from the elasticsearch server
-    elasticsearch_pkey = sh returnStdout: true, script: 'cat /home/ubuntu/.ssh/id_rsa.pub'
-    return (elasticsearch_ip, elasticsearch_pkey)
+    // Get the IP of the current worker server
+    server_ip = sh returnStdout: true, script: 'ip addr show eth0 | grep "inet\\b" | awk \'{print $2}\' | cut -d/ -f1'
+    echo "The IP address of the server is: ${server_ip}"
+    return (server_ip)
 
 }
 
 
-def add_key_to_host(host_ip, public_key) {
+def get_server_public_key() {
+
+    String pkey
+
+    // Get the public key from the current worker server
+    pkey = sh returnStdout: true, script: 'cat $HOME/.ssh/id_rsa.pub'
+    return (pkey)
+
+}
+
+
+def add_key_to_server(server_ip, public_key) {
 
     sh """
-    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    ssh -o StrictHostKeyChecking=no root@${server_ip} '''
         echo "${public_key}" >> \$HOME/.ssh/authorized_keys
     '''
     """

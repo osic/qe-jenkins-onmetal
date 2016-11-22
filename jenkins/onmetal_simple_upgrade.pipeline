@@ -35,7 +35,8 @@ node('master') {
 node('elasticsearch') {
 
     // Get the server information
-    (elasticsearch_ip, elasticsearch_pkey) = common.get_elasticsearch_server_info()
+    elasticsearch_ip = common.get_server_ip()
+    elasticsearch_pkey = common.get_server_public_key()
 
 }
 
@@ -62,7 +63,7 @@ node('onmetal-provisioner') {
     osa.vm_preparation_for_osa(from_release)
 
     // Add the elasticsearch public key to the deployed onmetal host
-    common.add_key_to_host(onmetal_ip, elasticsearch_pkey)
+    common.add_key_to_server(onmetal_ip, elasticsearch_pkey)
 
 }
 
