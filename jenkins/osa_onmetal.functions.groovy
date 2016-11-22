@@ -310,6 +310,7 @@ def install_during_upgrade_tests() {
     pip install -r requirements.txt
     '''
     """
+
 }
 
 
@@ -324,6 +325,7 @@ def start_during_test() {
     python call_test.py -d
     ''' &
     """ 
+
 }
 
 
@@ -337,6 +339,7 @@ def stop_during_test() {
     sudo touch /usr/during.uptime.stop
     '''
     """
+
 }
 
 
@@ -347,6 +350,7 @@ def aggregate_results(host_ip) {
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
     """
+
 }
 
 
@@ -363,6 +367,7 @@ def install_api_uptime_tests() {
     pip install -r requirements.txt
     '''
     """
+
 }
 
 
@@ -377,6 +382,7 @@ def start_api_uptime_tests() {
     python call_test.py -v -d -s nova,swift -o /root/output/api.uptime.out
     ''' &
     """
+
 }
 
 
@@ -390,6 +396,7 @@ def stop_api_uptime_tests() {
     sudo touch /usr/api.uptime.stop
     '''
     """
+
 }
 
 def setup_parse_persistent_resources(){
@@ -402,6 +409,7 @@ def setup_parse_persistent_resources(){
     pip install /root/persistent-resources-tests-parse/
     '''
     """
+
 }
 
 def parse_persistent_resources_tests(){
@@ -415,6 +423,7 @@ def parse_persistent_resources_tests(){
     rm *.csv
     '''
     """
+
 }
 
 def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
@@ -444,16 +453,18 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 	    '''
 	    """
 	}
+
 }
 
 
 def parse_results() {
 	
-	sh """
-	git clone https://github.com/osic/elastic-benchmark
-	sudo pip install -e elastic-benchmark
-	elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
-	"""
+    sh """
+    git clone https://github.com/osic/elastic-benchmark
+    sudo pip install -e elastic-benchmark
+    elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+    """
+
 }
 
 
