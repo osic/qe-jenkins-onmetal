@@ -438,21 +438,31 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
     '''
     """
 
-	if (results_file == 'after_upgrade') {
-	    //Pull persistent, during, api, smoke results from onmetal to ES 
-	    sh """
-            ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-	    elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
-	    ''''
-	    """
-	}
-	else {
-	    sh """
-            ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-	    elastic-upgrade -b /home/ubuntu/subunit/smoke/before_upgrade
-	    '''
-	    """
-	}
+    if (results_file == 'after_upgrade') {
+        //Pull persistent, during, api, smoke results from onmetal to ES 
+        sh """
+        ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
+        elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during.uptime.out -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+        ''''
+        """
+    }
+    else {
+        sh """
+        ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
+        elastic-upgrade -b /home/ubuntu/subunit/smoke/before_upgrade
+        '''
+        """
+    }
+
+}
+
+def install_elastic_parse() {
+	
+    sh """
+    rm -rf elastic-benchmark
+    git clone https://github.com/osic/elastic-benchmark
+    sudo pip install -e elastic-benchmark
+    """"
 
 }
 
@@ -460,9 +470,10 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 def parse_results() {
 	
     sh """
-    git clone https://github.com/osic/elastic-benchmark
-    sudo pip install -e elastic-benchmark
-    elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+    elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during.uptime.out -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
+    elastic-upgrade -s /home/ubuntu/output/nova_status.txt
+    elastic-upgrade -s /home/ubuntu/output/swift_status.txt
+    elastic-upgrade -s /home/ubuntu/output/keystone_status.txt
     """
 
 }
