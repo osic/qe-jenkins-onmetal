@@ -456,7 +456,7 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 
 }
 
-def install_elastic_parse() {
+def install_elastic_parser() {
 	
     sh """
     rm -rf elastic-benchmark
