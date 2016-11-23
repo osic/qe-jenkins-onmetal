@@ -185,7 +185,10 @@ node('elasticsearch'){
     
     //Pull data from onmetal places it on ES vm
     osa.aggregate_results(onmetal_ip)
-
+    
+    //Install elastic parser
+    osa.install_elastic_parser()
+  
     //Push data to ES
     osa.parse_results()
     
