@@ -15,11 +15,12 @@
         recursive: yes
         version: "{{ openstack_release }}"
       tags:
-        - chekout-mitaka-version
+        - chekout-release
        
     - name: Run Upgrade.sh
-      shell: export TERM=xterm; echo 'YES' | I_REALLY_KNOW_WHAT_I_AM_DOING=true /opt/openstack-ansible/scripts/run-upgrade.sh
+      shell: export TERM=xterm; echo 'YES' | I_REALLY_KNOW_WHAT_I_AM_DOING=true scripts/run-upgrade.sh
       args:
         chdir: /opt/openstack-ansible
+      retries: 3
       tags:
         - run-upgrade
