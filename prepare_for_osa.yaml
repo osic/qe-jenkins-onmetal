@@ -67,32 +67,15 @@
       tags:
         - persist-admin-password
 
-    - name: Configure image service
-      lineinfile:
+    - name: Copy user_variables.yml
+      copy:
+        src: templates/user_variables.yml
         dest: /etc/openstack_deploy/user_variables.yml
-        insertafter: "^#glance_default_store"
-        state: present
-        line: "glance_default_store: swift"
+        owner: root
+        group: root
+        mode: 0600
       tags:
-        - set-glance-default-store
-
-    - name: Configure cinder AZ
-      lineinfile:
-        dest: /etc/openstack_deploy/user_variables.yml
-        insertafter: EOF
-        state: present
-        line: "cinder_default_availability_zone: cinderAZ_1"
-      tags:
-        - set-cinder-default-az
-
-    - name: Configure neutron L2 population
-      lineinfile:
-        dest: /etc/openstack_deploy/user_variables.yml
-        insertafter: EOF
-        state: present
-        line: "neutron_l2_population: True"
-      tags:
-        - set-neutron-l2-population
+        - copy-user-variables
 
     - name: Copy openstack_user_config.yml
       copy:
