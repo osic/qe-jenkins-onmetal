@@ -35,5 +35,5 @@
         clone: yes
         dest: /root/rpcops-onmetal-labconfigurator
         recursive: yes
-        version: master
+        version: usehaproxy
       when: repostatus.stat.exists == False
