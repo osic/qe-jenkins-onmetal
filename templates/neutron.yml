@@ -1,0 +1,8 @@
+---
+# /etc/openstack_deploy/conf.d/neutron.yml
+# neutron-server, neutron-agents
+network_hosts:
+  network01:
+    ip: 172.29.236.240
+  network02:
+    ip: 172.29.236.241

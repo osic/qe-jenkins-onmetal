@@ -1,0 +1,9 @@
+---
+# /etc/openstack_deploy/conf.d/heat.yml
+orchestration_hosts:
+  infra01:
+    ip: 172.29.236.101
+  infra02:
+    ip: 172.29.236.102
+  infra03:
+    ip: 172.29.236.103

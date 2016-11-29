@@ -1,0 +1,8 @@
+---
+# The nodes where haproxy will run
+# /etc/openstack_deploy/conf.d/haproxy.yml
+haproxy_hosts:
+  network01:
+    ip: 172.29.236.240
+  network02:
+    ip: 172.29.236.241

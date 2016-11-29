@@ -1,0 +1,129 @@
+---
+# /etc/openstack_deploy/conf.d/ceph.yml
+storage-infra_hosts:
+  infra01:
+    ip: 172.29.236.101
+  infra02:
+    ip: 172.29.236.102
+  infra03:
+    ip: 172.29.236.103
+
+storage_hosts:
+  infra01:
+    ip: 172.29.236.101
+    container_vars:
+      cinder_backends:
+        limit_container_types: cinder_volume
+        ceph:
+          volume_driver: cinder.volume.drivers.rbd.RBDDriver
+          rbd_pool: volumes
+          rbd_ceph_conf: /etc/ceph/ceph.conf
+          rbd_flatten_volume_from_snapshot: 'false'
+          rbd_max_clone_depth: 5
+          rbd_store_chunk_size: 4
+          rados_connect_timeout: -1
+          glance_api_version: 2
+          volume_backend_name: ceph
+          rbd_user: "{{ cinder_ceph_client }}"
+          rbd_secret_uuid: "{{ cinder_ceph_client_uuid }}"
+  infra02:
+    ip: 172.29.236.102
+    container_vars:
+      cinder_backends:
+        limit_container_types: cinder_volume
+        ceph:
+          volume_driver: cinder.volume.drivers.rbd.RBDDriver
+          rbd_pool: volumes
+          rbd_ceph_conf: /etc/ceph/ceph.conf
+          rbd_flatten_volume_from_snapshot: 'false'
+          rbd_max_clone_depth: 5
+          rbd_store_chunk_size: 4
+          rados_connect_timeout: -1
+          glance_api_version: 2
+          volume_backend_name: ceph
+          rbd_user: "{{ cinder_ceph_client }}"
+          rbd_secret_uuid: "{{ cinder_ceph_client_uuid }}"
+  infra03:
+    ip: 172.29.236.103
+    container_vars:
+      cinder_backends:
+        limit_container_types: cinder_volume
+        ceph:
+          volume_driver: cinder.volume.drivers.rbd.RBDDriver
+          rbd_pool: volumes
+          rbd_ceph_conf: /etc/ceph/ceph.conf
+          rbd_flatten_volume_from_snapshot: 'false'
+          rbd_max_clone_depth: 5
+          rbd_store_chunk_size: 4
+          rados_connect_timeout: -1
+          glance_api_version: 2
+          volume_backend_name: ceph
+          rbd_user: "{{ cinder_ceph_client }}"
+          rbd_secret_uuid: "{{ cinder_ceph_client_uuid }}"
+
+mons_hosts:
+  infra01:
+    ip: 172.29.236.101
+  infra02:
+    ip: 172.29.236.102
+  infra03:
+    ip: 172.29.236.103
+
+osds_hosts:
+  ceph01:
+    ip: 172.29.236.150
+    container_vars:
+    # The devices must be specified in conjunction with raw_journal_devices below.
+    # If you want one journal device per five drives, specify the same journal_device five times.
+      devices:
+        - /dev/vdb
+        - /dev/vdc
+        - /dev/vdd
+        - /dev/vde
+        - /dev/vdf
+    # Note: If a device does not have a matching "raw_journal_device",
+    #       it will co-locate the journal on the device.
+      raw_journal_devices:
+        - /dev/vdb
+        - /dev/vdc
+        - /dev/vdd
+        - /dev/vde
+        - /dev/vdf
+  ceph02:
+    ip: 172.29.236.151
+    container_vars:
+    # The devices must be specified in conjunction with raw_journal_devices below.
+    # If you want one journal device per five drives, specify the same journal_device five times.
+      devices:
+        - /dev/vdb
+        - /dev/vdc
+        - /dev/vdd
+        - /dev/vde
+        - /dev/vdf
+    # Note: If a device does not have a matching "raw_journal_device",
+    #       it will co-locate the journal on the device.
+      raw_journal_devices:
+        - /dev/vdb
+        - /dev/vdc
+        - /dev/vdd
+        - /dev/vde
+        - /dev/vdf
+  ceph03:
+    ip: 172.29.236.152
+    container_vars:
+    # The devices must be specified in conjunction with raw_journal_devices below.
+    # If you want one journal device per five drives, specify the same journal_device five times.
+      devices:
+        - /dev/vdb
+        - /dev/vdc
+        - /dev/vdd
+        - /dev/vde
+        - /dev/vdf
+    # Note: If a device does not have a matching "raw_journal_device",
+    #       it will co-locate the journal on the device.
+      raw_journal_devices:
+        - /dev/vdb
+        - /dev/vdc
+        - /dev/vdd
+        - /dev/vde
+        - /dev/vdf

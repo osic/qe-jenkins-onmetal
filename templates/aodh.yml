@@ -1,0 +1,9 @@
+# The infra nodes that will be running the alarming services
+# /etc/openstack_deploy/conf.d/aodh.yml
+metering-alarm_hosts:
+  infra01:
+    ip: 172.29.236.101
+  infra02:
+    ip: 172.29.236.102
+  infra03:
+    ip: 172.29.236.103
