@@ -87,15 +87,30 @@
       tags:
         - copy-user-config
 
-    - name: Copy swift.yml
+    - name: Copy yml conf.d files
       copy:
-        src: templates/swift.yml
-        dest: /etc/openstack_deploy/conf.d/swift.yml
+        src: "templates/{{ item }}.yml"
+        dest: "/etc/openstack_deploy/conf.d/{{ item }}.yml"
         owner: root
         group: root
         mode: 0600
+      with_items:
+        #- aodh
+        #- ceph
+        - cinder
+        #- gnocchi
+        - haproxy
+        - heat
+        - horizon
+        #- ironic
+        - keystone
+        - logging
+        #- magnum
+        - neutron
+        - nova
+        - swift
       tags:
-        - copy-swift-config
+        - copy-conf-files
 
     - name: Build openstack-ansible inventory
       command: python /opt/openstack-ansible/playbooks/inventory/dynamic_inventory.py
