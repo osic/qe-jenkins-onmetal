@@ -24,7 +24,7 @@
       with_items: "{{ vms.list_vms }}"
 
     - name: "Remove all snapshots"
-      shell: "for i in `virsh list --all --name|awk '/infra|compute|storage|cinder|ceph|swift|object|logger|kolla/ { print }'`; \
+      shell: "for i in `virsh list --all --name|awk '/infra|network|compute|storage|cinder|ceph|swift|object|logger|kolla/ { print }'`; \
       do for j in `virsh snapshot-list --name $i`; do virsh snapshot-delete --domain $i --snapshotname $j; done; done"
 
     - name: "Remove all VMs"
@@ -36,5 +36,5 @@
       with_items: "{{ vms.list_vms }}"
 
     - name: "Remove all storage devices"
-      shell: "for a in `virsh vol-list --pool storage|awk '/infra|compute|storage|cinder|ceph|swift|object|logger|kolla/ { print $1 }'`; \
+      shell: "for a in `virsh vol-list --pool storage|awk '/infra|network|compute|storage|cinder|ceph|swift|object|logger|kolla/ { print $1 }'`; \
       do virsh vol-delete $a storage; done;"
