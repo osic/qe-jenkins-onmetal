@@ -3,3 +3,4 @@ hosts
 *.pyc
 
 results.txt
+.idea/
