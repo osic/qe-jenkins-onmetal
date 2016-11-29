@@ -126,16 +126,3 @@
       shell: "python /opt/openstack-ansible/scripts/inventory-manage.py -l|awk 'match($0, /(infra0._utility)/, m) { print $12 \" \" $2 \" \" m[1] }' >> /etc/hosts"
       tags:
         - add-utility-to-onmetal
-
-    - name: Remove containers from VPX
-      command: bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-cleaner
-      tags:
-        - vpx-container-cleanup
-
-    - name: Add containers to VPX
-      shell: |
-        ssh nsroot@10.5.0.4 <<EOF
-        `bash /root/rpcops-onmetal-labconfigurator/resources/files/vpx-configurator`
-        EOF
-      tags:
-        - vpx-container-setup
