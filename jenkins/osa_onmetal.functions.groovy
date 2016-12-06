@@ -346,9 +346,18 @@ def stop_during_test() {
 def aggregate_results(host_ip) {
 
     //Pull persistent, during, api, smoke results from onmetal to ES vm
+    host_ip = "${host_ip}".trim()
     sh """
+    {
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
+    } || {
+        echo 'No output directory found.'
+    }
+    {
+        scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
+    } || {
+        echo 'No subunit directory found.'
+    }
     """
 
 }
