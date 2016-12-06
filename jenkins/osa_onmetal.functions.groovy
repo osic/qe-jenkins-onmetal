@@ -442,8 +442,6 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
     ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ /home/ubuntu/
     scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ /home/ubuntu/
-    git clone https://github.com/osic/elastic-benchmark
-    sudo pip install -e elastic-benchmark
     '''
     """
 
@@ -469,8 +467,6 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 def parse_results() {
 	
     sh """
-    git clone https://github.com/osic/elastic-benchmark
-    sudo pip install -e elastic-benchmark
     elastic-upgrade -u /home/ubuntu/output/api.uptime.out -d /home/ubuntu/output/during_output.txt -p /home/ubuntu/output/persistent_resource.txt -b /home/ubuntu/subunit/smoke/before_upgrade -a /home/ubuntu/subunit/smoke/after_upgrade
     """
 
