@@ -202,7 +202,7 @@ def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     cd /root/tempest/
     stream_id=`cat .testrepository/next-stream`
-    ostestr --no-slowest --regex smoke
+    ostestr --no-slowest --regex smoke || echo 'Some tests failed.'
     mkdir -p /root/subunit/smoke/
     cp .testrepository/\$stream_id /root/subunit/smoke/${results_file}
     '''
