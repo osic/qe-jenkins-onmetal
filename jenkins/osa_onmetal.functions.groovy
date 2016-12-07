@@ -349,12 +349,12 @@ def aggregate_results(host_ip) {
     host_ip = "${host_ip}".trim()
     sh """
     {
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ $HOME/
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ \$HOME/
     } || {
         echo 'No output directory found.'
     }
     {
-        scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ $HOME/
+        scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ \$HOME/
     } || {
         echo 'No subunit directory found.'
     }
@@ -440,8 +440,8 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
     ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ $HOME/
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ $HOME/
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ \$HOME
+    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ \$HOME
     '''
     """
 
@@ -449,14 +449,14 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 	    //Pull persistent, during, api, smoke results from onmetal to ES 
 	    sh """
             ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-	    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during.uptime.out -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
+	    elastic-upgrade -u \$HOME/output/api.uptime.out -d \$HOME/output/during_output.txt -p \$HOME/output/persistent_resource.txt -b \$HOME/subunit/smoke/before_upgrade -a \$HOME/subunit/smoke/after_upgrade
 	    ''''
 	    """
 	}
 	else {
 	    sh """
             ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-	    elastic-upgrade -b $HOME/subunit/smoke/before_upgrade
+	    elastic-upgrade -b \$HOME/subunit/smoke/before_upgrade
 	    '''
 	    """
 	}
@@ -466,10 +466,21 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 
 def parse_results() {
 	
-    sh """
-    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during.uptime.out -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
+    sh '''
+    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during_output.txt -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
     elastic-upgrade -s $HOME/output/nova_status.json,$HOME/output/swift_status.json,$HOME/output/keystone_status.json
-    """
+    '''
+
+}
+
+
+def install_parser() {
+
+    sh '''
+    rm -rf $HOME/elastic-benchmark
+    git clone https://github.com/osic/elastic-benchmark $HOME/elastic-benchmark
+    sudo pip install --upgrade $HOME/elastic-benchmark/
+    '''
 
 }
 

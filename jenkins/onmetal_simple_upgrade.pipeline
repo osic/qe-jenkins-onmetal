@@ -183,6 +183,9 @@ node('onmetal-provisioner'){
 
 node('elasticsearch'){
     
+    // Install/upgrade the parser in ElasticSearch
+    osa.install_parser()
+
     //Pull data from onmetal places it on ES vm
     osa.aggregate_results(onmetal_ip)
 
