@@ -13,10 +13,9 @@
         chdir: /opt/openstack-ansible/playbooks/
 
     - name: Update hosts in os-tempest-localhost-install.yml
-      replace:
-        dest: /opt/openstack-ansible/playbooks/os-tempest-localhost-install.yml
-        regexp: 'utility_all'
-        replace: 'localhost'
+      command: /usr/bin/sed -i 's/utility_all/localhost/g' os-tempest-{,localhost-}.yml
+      args:
+        chdir: /opt/openstack-ansible/playbooks/
 
     - name: Install tempest on deploy node
       command: /usr/local/bin/openstack-ansible os-tempest-localhost-install.yml
