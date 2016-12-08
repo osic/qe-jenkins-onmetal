@@ -1,0 +1,17 @@
+---
+- hosts: deploy_node
+  name: Install persistent resource tests
+  tasks:
+    - name: Clone git repo
+      command: git clone https://github.com/osic/persistent-resources-test /root/persistent-resources-tests
+
+    - name: install persistent
+      command: pip install /root/persistent-resources-test-parse/
+
+    - name: Transfer tempest script to utility containers
+      command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m copy -a "src=/root/bme_tempest_run.sh dest=/root/bme_tempest_run.sh"
+  
+    - name: Run persistent tests
+      command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "/bin/bash /root/bme_tempest_run.sh persistent-verify"
+    - name: Run persistent tests     
+      command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "/bin/bash /root/bme_tempest_run.sh persistent-clean"
