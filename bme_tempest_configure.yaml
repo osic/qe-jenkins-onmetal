@@ -7,20 +7,8 @@
       args:
         chdir: /opt/openstack-ansible/playbooks/
 
-    - name: Copy os-tempest-install.yml file
-      command: /bin/cp os-tempest-install.yml os-tempest-localhost-install.yml
-      args:
-        chdir: /opt/openstack-ansible/playbooks/
-
-    - name: Update hosts in os-tempest-localhost-install.yml
-      command: /bin/sed -i 's/utility_all/localhost/g' os-tempest-localhost-install.yml
-      args:
-        chdir: /opt/openstack-ansible/playbooks/
-
-    - name: Install tempest on deploy node
-      command: /usr/local/bin/openstack-ansible os-tempest-localhost-install.yml
-      args:
-        chdir: /opt/openstack-ansible/playbooks/
-
     - name: Get tempest configuration from container
       command: /usr/local/bin/ansible utility_all[0] -i /opt/openstack-ansible/playbooks/inventory -m fetch -a "src=/opt/tempest_untagged/etc/tempest.conf,dest=/opt/tempest_untagged/etc/tempest.conf"
+
+    - name: Configure and run tempest tests
+      cmd: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m script -a "scripts/bme_tempest_run.sh" 
