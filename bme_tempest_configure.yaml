@@ -7,7 +7,7 @@
       args:
         chdir: /opt/openstack-ansible/playbooks/
 
-    - name: Configure and run tempest tests
+    - name: Transfer tempest script to utility containers
       copy: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m copy -a "src=/root/bme_tempest_run.sh dest=/root/bme_tempest_run.sh"
   
     - name: Run tempest on utility nodes
