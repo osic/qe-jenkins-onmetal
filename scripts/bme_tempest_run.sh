@@ -1,5 +1,5 @@
-cd /opt/tempest_untagged/tempest
-pip install -r .
+cd /opt/tempest_untagged
+pip install -r requirements.txt 
 testr init
 stream_id=$(cat .testrepository/next-stream)
 ostestr --no-slowest --regex smoke
