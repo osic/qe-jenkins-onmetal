@@ -7,8 +7,5 @@
       args:
         chdir: /opt/openstack-ansible/playbooks/
 
-    - name: Get tempest configuration from container
-      command: /usr/local/bin/ansible utility_all[0] -i /opt/openstack-ansible/playbooks/inventory -m fetch -a "src=/opt/tempest_untagged/etc/tempest.conf,dest=/opt/tempest_untagged/etc/tempest.conf"
-
     - name: Configure and run tempest tests
       command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m script -a "scripts/bme_tempest_run.sh" 
