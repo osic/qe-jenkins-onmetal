@@ -331,6 +331,10 @@ def install_persistent_resources_tests() {
 
 }
 
+def bme_run_persistent_resources_tests(action='verify', results_file=null){
+    echo 'run persistent tests'
+    ansiblePlaybook inventory: 'hosts', playbook: 'bme_install_persistant.yaml', sudoUser: null
+}
 
 def run_persistent_resources_tests(action = 'verify', results_file = null) {
 
