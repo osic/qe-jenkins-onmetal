@@ -190,6 +190,22 @@ def configure_tempest() {
 
 }
 
+def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_untagged") {
+
+    String extra_vars= "--extra-vars "
+    if (test_name != null){
+      extra_vars += "test_name=${test_name} "
+    }
+    if (test_type != null){
+      extra_vars += "test_type=${test_type} "
+    }
+    if (tempest_dir != null){
+      extra_vars += "tempest_dir=${tempest_dir}"
+    }
+    echo "Running playbook bme_test_suite.yml with extra vars ${extra_vars}"
+    ansiblePlaybook "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml'
+}
+
 def bme_configure_tempest() {
 
     try {
@@ -247,6 +263,7 @@ def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
     }
 
 }
+
 
 def bme_run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 
@@ -331,9 +348,17 @@ def install_persistent_resources_tests() {
 
 }
 
-def bme_run_persistent_resources_tests(action='verify', results_file=null){
-    echo 'run persistent tests'
-    ansiblePlaybook inventory: 'hosts', playbook: 'bme_install_persistant.yaml', sudoUser: null
+def bme_run_persistent_resources_tests(test_type=null){
+
+    if (test_type == null) {
+      println("Requires test_type {persistent-resources-tests/persistent-resources-tests-parse}\nExiting...")
+
+    } else {
+
+    echo "Run $test_type"
+    ansiblePlaybook extras: "-e test_type=${test_type}", inventory: 'hosts', playbook: 'prepare_for_osa.yaml', sudoUser: null
+
+    }
 }
 
 def run_persistent_resources_tests(action = 'verify', results_file = null) {
@@ -466,7 +491,7 @@ def stop_api_uptime_tests() {
     '''
     """
 
-}
+}p
 
 def setup_parse_persistent_resources(){
 
