@@ -267,8 +267,9 @@ def install_persistent_resources_tests() {
     echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/osic/persistent-resources-tests.git /root/persistent-resources-tests
-    pip install /root/persistent-resources-tests/
+    rm -rf \$HOME/persistent-resources-tests
+    git clone https://github.com/osic/persistent-resources-tests.git \$HOME/persistent-resources-tests
+    pip install --upgrade \$HOME/persistent-resources-tests/
     '''
     """
 
@@ -413,8 +414,9 @@ def setup_parse_persistent_resources(){
     
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/osic/persistent-resources-tests-parse.git /root/persistent-resources-tests-parse
-    pip install /root/persistent-resources-tests-parse/
+    rm -rf \$HOME/root/persistent-resources-tests-parse
+    git clone https://github.com/osic/persistent-resources-tests-parse.git \$HOME/persistent-resources-tests-parse
+    pip install --upgrade /root/persistent-resources-tests-parse/
     '''
     """
 
@@ -426,8 +428,9 @@ def parse_persistent_resources_tests(){
 
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd /root/subunit/persistent_resources/
-    resource-parse --u . > /root/output/persistent_resource.txt
+    mkdir -p \$HOME/output
+    cd \$HOME/subunit/persistent_resources/
+    resource-parse --u . > \$HOME/output/persistent_resource.txt
     rm *.csv
     '''
     """
@@ -456,7 +459,7 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 	    //Pull persistent, during, api, smoke results from onmetal to ES 
 	    sh """
             ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-	    elastic-upgrade -u \$HOME/output/api.uptime.out -d \$HOME/output/during_output.txt -p \$HOME/output/persistent_resource.txt -b \$HOME/subunit/smoke/before_upgrade -a \$HOME/subunit/smoke/after_upgrade
+	    elastic-upgrade -u \$HOME/output/api.uptime.out -d \$HOME/output/during.uptime.out -p \$HOME/output/persistent_resource.txt -b \$HOME/subunit/smoke/before_upgrade -a \$HOME/subunit/smoke/after_upgrade
             elastic-upgrade -s \$HOME/output/nova_status.json,\$HOME/output/swift_status.json,\$HOME/output/keystone_status.json
 	    ''''
 	    """
@@ -475,7 +478,7 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 def parse_results() {
 	
     sh '''
-    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during_output.txt -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
+    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during.uptime.out -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
     elastic-upgrade -s $HOME/output/nova_status.json,$HOME/output/swift_status.json,$HOME/output/keystone_status.json
     '''
 
