@@ -370,10 +370,11 @@ def install_api_uptime_tests() {
     // setup api uptime tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
-    mkdir -p /root/output
-    git clone https://github.com/osic/api_uptime.git
-    cd api_uptime
-    pip install -r requirements.txt
+    mkdir -p \$HOME/output
+    rm -rf \$HOME/api_uptime
+    git clone https://github.com/osic/api_uptime.git \$HOME/api_uptime
+    cd \$HOME/api_uptime
+    pip install --upgrade -r requirements.txt
     '''
     """
 
@@ -387,8 +388,8 @@ def start_api_uptime_tests() {
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
-    cd api_uptime/api_uptime
-    python call_test.py -v -d -s nova,swift -o /root/output/api.uptime.out
+    cd \$HOME/api_uptime/api_uptime
+    python call_test.py -v -d -s nova,swift -o \$HOME/output/api.uptime.out
     ''' &
     """
 
