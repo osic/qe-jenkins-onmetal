@@ -208,7 +208,7 @@ def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_
       ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
     } else {
       echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
-      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
+      ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
     }
 }
 
