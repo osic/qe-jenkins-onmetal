@@ -205,10 +205,10 @@ def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_
 
     if (extra_vars == "-e "{
       echo "Running playbook bme_test_suite.yml with playbook defaults"
-      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml'
+      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
     } else {
       echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
-      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml'
+      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
     }
 }
 
