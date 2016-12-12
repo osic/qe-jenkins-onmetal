@@ -190,27 +190,27 @@ def configure_tempest() {
 
 }
 
-def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_untagged") {
-
-    String extra_vars= "-e "
-    if (test_name != null){
-      extra_vars += "test_name=${test_name} "
-    }
-    if (test_type != null){
-      extra_vars += "test_type=${test_type} "
-    }
-    if (tempest_dir != null){
-      extra_vars += "tempest_dir=${tempest_dir}"
-    }
-
-    if (extra_vars == "-e ") {
-      echo "Running playbook bme_test_suite.yml with playbook defaults"
-      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-    } else {
-      echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
-      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-    }
-}
+//def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_untagged") {
+//
+//    String extra_vars= "-e "
+//    if (test_name != null){
+//      extra_vars += "test_name=${test_name} "
+//    }
+//    if (test_type != null){
+//      extra_vars += "test_type=${test_type} "
+//    }
+//    if (tempest_dir != null){
+//      extra_vars += "tempest_dir=${tempest_dir}"
+//    }
+//
+//    if (extra_vars == "-e ") {
+//      echo "Running playbook bme_test_suite.yml with playbook defaults"
+//      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
+//    } else {
+//      echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
+//      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
+//    }
+//}
 
 def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 
