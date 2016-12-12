@@ -200,11 +200,11 @@ def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
     // Run the tests and store the results in ~/subunit/before
     tempest_output = sh returnStdout: true, script: """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd /root/tempest/
+    cd \$HOME/tempest/
     stream_id=`cat .testrepository/next-stream`
-    ostestr --no-slowest --regex smoke || echo 'Some tests failed.'
-    mkdir -p /root/subunit/smoke/
-    cp .testrepository/\$stream_id /root/subunit/smoke/${results_file}
+    ostestr --no-slowest --regex smoke || echo 'Some smoke tests failed.'
+    mkdir -p \$HOME/subunit/smoke/
+    cp .testrepository/\$stream_id \$HOME/subunit/smoke/${results_file}
     '''
     """
     // Make sure there are no failures in the smoke tests, if there are stop the workflow
@@ -287,11 +287,11 @@ def run_persistent_resources_tests(action = 'verify', results_file = null) {
 
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd /root/tempest/
+    cd \$HOME/tempest/
     stream_id=`cat .testrepository/next-stream`
-    ostestr --regex persistent-${action}
-    mkdir -p /root/subunit/persistent_resources/
-    cp .testrepository/\$stream_id /root/subunit/persistent_resources/${results_file}
+    ostestr --regex persistent-${action} || echo 'Some persistent resources tests failed.'
+    mkdir -p \$HOME/subunit/persistent_resources/
+    cp .testrepository/\$stream_id \$HOME/subunit/persistent_resources/${results_file}
     '''
     """
 
