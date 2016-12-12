@@ -192,18 +192,18 @@ def configure_tempest() {
 
 def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
 
-    String extra_vars= "-e "
+    String extra_vars= ""
     if (test_name != null){
-      extra_vars += "test_name=${test_name} "
+      extra_vars += "-e test_name=${test_name} "
     }
     if (test_type != null){
-      extra_vars += "test_type=${test_type} "
+      extra_vars += "-e test_type=${test_type} "
     }
     if (tempest_dir != null){
-      extra_vars += "tempest_dir=${tempest_dir}"
+      extra_vars += "-e tempest_dir=${tempest_dir}"
     }
 
-    if (extra_vars == "-e ") {
+    if (extra_vars == "") {
       echo "Running playbook bme_test_suite.yml with playbook defaults"
       ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
     } else {
