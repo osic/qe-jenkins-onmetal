@@ -25,5 +25,5 @@
       command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "/bin/bash /root/bme_testsuite_run.sh {{ test_type }} {{ tempest_root }}/{{ test_name }}"
 
     - name: Run persistent resources tests parse
-      when: test_type: resource-parse
+      when: test_type == "resource-parse"
       command: cd {{ tempest_root }}/{{ test_name }}/ &&  resource-parse --u . > {{ tempest_root }}/{{ test_name }}.txt && rm *.csv
