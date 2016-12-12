@@ -190,7 +190,7 @@ def configure_tempest() {
 
 }
 
-def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_untagged") {
+def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
 
     String extra_vars= "-e "
     if (test_name != null){
