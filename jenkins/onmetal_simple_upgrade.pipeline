@@ -69,6 +69,9 @@ node('onmetal-provisioner') {
     // Add the elasticsearch public key to the deployed onmetal host
     common.add_key_to_server(onmetal_ip, elasticsearch_pkey)
 
+    // Cleanup tests results directories if they exist to avoid causing false results
+    osa.cleanup_test_results()
+
 }
 
 

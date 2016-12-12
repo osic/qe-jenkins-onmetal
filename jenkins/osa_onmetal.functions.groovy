@@ -496,5 +496,21 @@ def install_parser() {
 }
 
 
+def cleanup_test_results() {
+
+    String host_ip = get_onmetal_ip()
+
+    println "Removing previous test results files..."
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    find $HOME/subunit ! -name '.*' ! -type d -exec rm -- {} + || echo "No subunit directory found."
+    find $HOME/output ! -name '.*' ! -type d -exec rm -- {} + || echo "No output directory found."
+    '''
+    """
+    println "The environment is clean from previous test results."
+
+}
+
+
 // The external code must return it's contents as an object
 return this;
