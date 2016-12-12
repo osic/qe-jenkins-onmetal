@@ -466,7 +466,7 @@ def stop_api_uptime_tests() {
     '''
     """
 
-}p
+}
 
 def setup_parse_persistent_resources(){
 
