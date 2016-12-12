@@ -190,27 +190,27 @@ def configure_tempest() {
 
 }
 
-//def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_untagged") {
-//
-//    String extra_vars= "-e "
-//    if (test_name != null){
-//      extra_vars += "test_name=${test_name} "
-//    }
-//    if (test_type != null){
-//      extra_vars += "test_type=${test_type} "
-//    }
-//    if (tempest_dir != null){
-//      extra_vars += "tempest_dir=${tempest_dir}"
-//    }
-//
-//    if (extra_vars == "-e ") {
-//      echo "Running playbook bme_test_suite.yml with playbook defaults"
-//      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-//    } else {
-//      echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
-//      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-//    }
-//}
+def bme_run_testsuite(test_name=null, test_type=null, tempest_dir="/opt/tempest_untagged") {
+
+    String extra_vars= "-e "
+    if (test_name != null){
+      extra_vars += "test_name=${test_name} "
+    }
+    if (test_type != null){
+      extra_vars += "test_type=${test_type} "
+    }
+    if (tempest_dir != null){
+      extra_vars += "tempest_dir=${tempest_dir}"
+    }
+
+    if (extra_vars == "-e ") {
+      echo "Running playbook bme_test_suite.yml with playbook defaults"
+      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
+    } else {
+      echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
+      ansiblePlaybook extras: "${extra_vars}" inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
+    }
+}
 
 def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 
@@ -253,45 +253,45 @@ def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 }
 
 
-//def bme_run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
-//
-//    String host_ip = get_onmetal_ip()
-//    String newline = "\n"
-//    def tempest_output, failures
-//
-//    // Run the tests and store the results in ~/subunit/before
-//    tempest_output = sh returnStdout: true, script: """
-//    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-//    cd /opt/tempest_untagged/
-//    stream_id=`cat .testrepository/next-stream`
-//    ostestr --no-slowest --regex smoke
-//    mkdir -p /opt/tempest_untagged/subunit/smoke/
-//    cp .testrepository/\$stream_id /opt/tempest_untagged/subunit/smoke/${results_file}
-//    '''
-//    """
-//    // Make sure there are no failures in the smoke tests, if there are stop the workflow
-//    println tempest_output
-//    if (tempest_output.contains('- Failed:') == true) {
-//
-//	failures = tempest_output.substring(tempest_output.indexOf('- Failed:') + 10)
-//        failures = failures.substring(0,failures.indexOf(newline)).toInteger()
-//        if (failures > 1) {
-//	    println 'Parsing failed smoke'
-//            if (elasticsearch_ip != null) {
-//	        aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip)
-//            }
-//            error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
-//        } else {
-//            println 'The Tempest smoke tests were successfull.'
-//        }
-//
-//    } else {
-//
-//        error 'There was an error running the smoke tests, stopping the pipeline.'
-//
-//    }
-//
-//}
+def bme_run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
+
+    String host_ip = get_onmetal_ip()
+    String newline = "\n"
+    def tempest_output, failures
+
+    // Run the tests and store the results in ~/subunit/before
+    tempest_output = sh returnStdout: true, script: """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    cd /opt/tempest_untagged/
+    stream_id=`cat .testrepository/next-stream`
+    ostestr --no-slowest --regex smoke
+    mkdir -p /opt/tempest_untagged/subunit/smoke/
+    cp .testrepository/\$stream_id /opt/tempest_untagged/subunit/smoke/${results_file}
+    '''
+    """
+    // Make sure there are no failures in the smoke tests, if there are stop the workflow
+    println tempest_output
+    if (tempest_output.contains('- Failed:') == true) {
+
+	failures = tempest_output.substring(tempest_output.indexOf('- Failed:') + 10)
+        failures = failures.substring(0,failures.indexOf(newline)).toInteger()
+        if (failures > 1) {
+	    println 'Parsing failed smoke'
+            if (elasticsearch_ip != null) {
+	        aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip)
+            }
+            error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
+        } else {
+            println 'The Tempest smoke tests were successfull.'
+        }
+
+    } else {
+
+        error 'There was an error running the smoke tests, stopping the pipeline.'
+
+    }
+
+}
 
 
 def delete_virtual_resources() {
