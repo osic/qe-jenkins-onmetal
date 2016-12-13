@@ -12,9 +12,9 @@ if [[ $1 = "smoke" ]]; then
 	for key in $keys
 	do
 		a="${key} ="
-		sed -ir "s|${a}.*|${a}|g" ${temp_dir}/etc/tempest.conf
-		b=$(grep """${a}""" ${temp_dir}/etc/tempest.conf.osa)
-		sed -ir "s|${a}|${b}|g" ${temp_dir}/etc/tempest.conf
+		sed -ir "s|${a}.*|${a}|g" ${temp_dir}/etc/tempest.conf.osa
+		b=$(grep """${a}""" ${temp_dir}/etc/tempest.conf)
+		sed -ir "s|${a}|${b}|g" ${temp_dir}/etc/tempest.conf.osa
 	done
 
 else
