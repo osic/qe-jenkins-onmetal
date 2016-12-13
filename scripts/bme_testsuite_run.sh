@@ -6,17 +6,14 @@ fi
 if [[ $1 = "smoke" ]]; then
   # smoke requires tempest to be installed, which doesn't follow persistent tests
 	cd ${2}/..
-	pwd
-	ls -lah
-        ls -lah etc/
-	ls -lah tempest/etc/
+	temp_dir=$(pwd)
   	keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
 	for key in $keys
 	do
 		a="${key} ="
-		sed -ir "s|${a}.*|${a}.*|g" ${2}/../etc/tempest.conf
-		b=$(grep ""${a}"" ${2}/../etc/tempest.conf.osa)
-		sed -ir "s|${a}|${b}|g" ${2}/../etc/tempest.conf
+		sed -ir "s|${a}.*|${a}.*|g" ${temp_dir}/etc/tempest.conf
+		b=$(grep ""${a}"" ${temp_dir}/etc/tempest.conf.osa)
+		sed -ir "s|${a}|${b}|g" ${temp_dir}/etc/tempest.conf
 	done
 
 else
