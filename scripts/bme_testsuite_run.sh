@@ -8,7 +8,7 @@ if [[ $1 = "smoke" ]]; then
 	cd ${2}/..
 	pwd
 	ls -lah
-  keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
+  	keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
 	for key in $keys
 	do
 		a="${key} ="
