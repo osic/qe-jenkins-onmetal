@@ -17,7 +17,7 @@
 
     - name: Install tempest on bme
       when: test_name == "tempest"
-      command: cd /opt/openstack-ansible/playbooks && openstack-ansible os-tempest-install.yaml
+      command: cd /opt/openstack-ansible/playbooks && openstack-ansible os-tempest-install.yml
 
     - name: Transfer bme_testsuite_run.sh script to utility containers
       when: test_name == "tempest"
