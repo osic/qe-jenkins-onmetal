@@ -18,8 +18,8 @@
     - name: Install tempest on bme
       when: test_name == "tempest"
       command: /usr/local/bin/openstack-ansible os-tempest-install.yml
-        args:
-          chdir: /opt/openstack-ansible/playbooks
+      args:
+        chdir: /opt/openstack-ansible/playbooks
 
     - name: Transfer bme_testsuite_run.sh script to utility containers
       when: test_name == "tempest"
