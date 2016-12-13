@@ -5,7 +5,7 @@ fi
 
 if [[ $1 = "smoke" ]]; then
   # smoke requires tempest to be installed, which doesn't follow persistent tests
-	cd ${2}/tempest
+	cd ${2}/..
   keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
 	for key in $keys
 	do
