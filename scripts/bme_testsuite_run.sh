@@ -24,4 +24,4 @@ testr init
 stream_id=$(cat .testrepository/next-stream)
 ostestr --no-slowest --regex ${1}
 mkdir -p subunit/${1}
-cp .testrepository/${stream_id} subunit/${1}.$(date +%s).results
+cp .testrepository/${stream_id} subunit/${1}/${1}.$(date +%s).results
