@@ -12,7 +12,7 @@ if [[ $1 = "smoke" ]]; then
 	for key in $keys
 	do
 		a="${key} ="
-		sed -ir "s|${a}.*|${a}.*|g" ${temp_dir}/etc/tempest.conf
+		sed -ir "s|${a}.*|${a}|g" ${temp_dir}/etc/tempest.conf
 		b=$(grep """${a}""" ${temp_dir}/etc/tempest.conf.osa)
 		sed -ir "s|${a}|${b}|g" ${temp_dir}/etc/tempest.conf
 	done
@@ -28,4 +28,6 @@ fi
 stream_id=$(cat .testrepository/next-stream)
 ostestr --no-slowest --regex ${1}
 mkdir -p subunit/${1}
-cp .testrepository/${stream_id} subunit/${1}/${1}.$(date +%s).results
+if [[ -e .testrepository/${stream_id} ]]; then
+	cp .testrepository/${stream_id} subunit/${1}/${1}.$(date +%s).results
+fi
