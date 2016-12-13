@@ -16,6 +16,8 @@ if [[ $1 = "smoke" ]]; then
 		b=$(grep """${a}""" ${temp_dir}/etc/tempest.conf)
 		sed -ir "s|${a}|${b}|g" ${temp_dir}/etc/tempest.conf.osa
 	done
+	mv ${temp_dir}/etc/tempest.conf ${temp_dir}/etc/tempest.conf.orig
+	mv ${temp_dir}/etc/tempest.conf.osa ${temp_dir}/etc/tempest.conf
 
 else
 	cd ${2}
