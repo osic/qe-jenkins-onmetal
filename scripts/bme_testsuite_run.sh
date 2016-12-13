@@ -1,3 +1,4 @@
+set -x 
 if [[ -z $1 || -z $2 ]]; then
 	echo "usage: bme_testsuite_run.sh [smoke|persistent-{clean,verify}] [DIR]"
 	exit 1
@@ -12,7 +13,7 @@ if [[ $1 = "smoke" ]]; then
 	do
 		a="${key} ="
 		sed -ir "s|${a}.*|${a}.*|g" ${temp_dir}/etc/tempest.conf
-		b=$(grep ""${a}"" ${temp_dir}/etc/tempest.conf.osa)
+		b=$(grep """${a}""" ${temp_dir}/etc/tempest.conf.osa)
 		sed -ir "s|${a}|${b}|g" ${temp_dir}/etc/tempest.conf
 	done
 
