@@ -22,7 +22,9 @@ else
 fi
 
 pip install -r requirements.txt
-testr init
+if [[ ! -e .testrepository ]]; then
+	testr init
+fi
 stream_id=$(cat .testrepository/next-stream)
 ostestr --no-slowest --regex ${1}
 mkdir -p subunit/${1}
