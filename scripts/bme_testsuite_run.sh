@@ -6,6 +6,8 @@ fi
 if [[ $1 = "smoke" ]]; then
   # smoke requires tempest to be installed, which doesn't follow persistent tests
 	cd ${2}/..
+	pwd
+	ls -lah
   keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
 	for key in $keys
 	do
@@ -19,9 +21,9 @@ else
 	cd ${2}
 fi
 
-pip install -r requirements.txt
-testr init
-stream_id=$(cat .testrepository/next-stream)
-ostestr --no-slowest --regex ${1}
-mkdir -p subunit/${1}
-cp .testrepository/${stream_id} subunit/${1}/${1}.$(date +%s).results
+#pip install -r requirements.txt
+#testr init
+#stream_id=$(cat .testrepository/next-stream)
+#ostestr --no-slowest --regex ${1}
+#mkdir -p subunit/${1}
+#cp .testrepository/${stream_id} subunit/${1}/${1}.$(date +%s).results
