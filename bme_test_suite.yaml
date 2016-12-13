@@ -15,23 +15,23 @@
       when: test_name != "tempest"
       command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "pip install {{ tempest_root}}/{{ test_name }}"
 
-    - name: Install tempest on bme
+    - name: "Install tempest on bme"
       when: test_name == "tempest"
       command: /usr/local/bin/openstack-ansible os-tempest-install.yml
       args:
         chdir: /opt/openstack-ansible/playbooks
 
-    - name: Transfer bme_testsuite_run.sh script to utility containers
+    - name: "Transfer bme_testsuite_run.sh script to utility containers"
       when: test_name == "tempest"
       command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m copy -a "src=/root/bme_testsuite_run.sh dest=/root/bme_testsuite_run.sh"
 
-    - name: Get and format tempest.conf
+    - name: "Get and format tempest.conf"
       when: test_name == "tempest"
       command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "wget -O {{ tempest_root }}/etc/{{ test_name }}.conf.osa https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/tempest.conf"
 
-    - name: Run {{ test_type }} tests
+    - name: "Run {{ test_type }} tests"
       command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "/bin/bash /root/bme_testsuite_run.sh {{ test_type }} {{ tempest_root }}/{{ test_name }}"
 
-    - name: Run persistent resources tests parse
+    - name: "Run persistent resources tests parse"
       when: test_type == "resource-parse"
       command: cd {{ tempest_root }}/{{ test_name }}/ &&  resource-parse --u . > {{ tempest_root }}/{{ test_name }}.txt && rm *.csv
