@@ -1,6 +1,6 @@
-if [[ -n $1 || -n $2 ]]; then
+if [[ -z $1 || -z $2 ]]; then
 	echo "usage: bme_testsuite_run.sh [smoke|persistent-{clean,verify}] [DIR]"
-	exit
+	exit 1
 fi
 
 if [[ $1 = "smoke" ]]; then
