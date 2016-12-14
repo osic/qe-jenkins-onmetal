@@ -13,7 +13,7 @@
 
     - name: "Install {{ test_name }} into {{ tempest_root }}/{{ test_name }}"
       when: test_name != "tempest"
-      command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "pip install {{ tempest_root}}/{{ test_name }}"
+      command: /usr/local/bin/ansible utility_all -i /opt/openstack-ansible/playbooks/inventory -m shell -a "pip install --upgrade {{ tempest_root}}/{{ test_name }}"
 
     - name: "Install tempest on bme"
       when: test_name == "tempest"

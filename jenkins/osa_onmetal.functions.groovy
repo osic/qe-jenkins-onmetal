@@ -192,7 +192,7 @@ def configure_tempest() {
 
 def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
 
-    String extra_vars= ""
+    String extra_vars = ""
     if (test_name != null){
       extra_vars += "-e test_name=${test_name} "
     }
