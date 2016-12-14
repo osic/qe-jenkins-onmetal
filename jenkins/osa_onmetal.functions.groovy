@@ -221,11 +221,11 @@ def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
     // Run the tests and store the results in ~/subunit/before
     tempest_output = sh returnStdout: true, script: """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd /root/tempest/
+    cd \$HOME/tempest/
     stream_id=`cat .testrepository/next-stream`
-    ostestr --no-slowest --regex smoke
-    mkdir -p /root/subunit/smoke/
-    cp .testrepository/\$stream_id /root/subunit/smoke/${results_file}
+    ostestr --no-slowest --regex smoke || echo 'Some smoke tests failed.'
+    mkdir -p \$HOME/subunit/smoke/
+    cp .testrepository/\$stream_id \$HOME/subunit/smoke/${results_file}
     '''
     """
     // Make sure there are no failures in the smoke tests, if there are stop the workflow
@@ -288,8 +288,9 @@ def install_persistent_resources_tests() {
     echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/osic/persistent-resources-tests.git /root/persistent-resources-tests
-    pip install /root/persistent-resources-tests/
+    rm -rf \$HOME/persistent-resources-tests
+    git clone https://github.com/osic/persistent-resources-tests.git \$HOME/persistent-resources-tests
+    pip install --upgrade \$HOME/persistent-resources-tests/
     '''
     """
 
@@ -306,11 +307,11 @@ def run_persistent_resources_tests(action = 'verify', results_file = null) {
 
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd /root/tempest/
+    cd \$HOME/tempest/
     stream_id=`cat .testrepository/next-stream`
-    ostestr --regex persistent-${action}
-    mkdir -p /root/subunit/persistent_resources/
-    cp .testrepository/\$stream_id /root/subunit/persistent_resources/${results_file}
+    ostestr --regex persistent-${action} || echo 'Some persistent resources tests failed.'
+    mkdir -p \$HOME/subunit/persistent_resources/
+    cp .testrepository/\$stream_id \$HOME/subunit/persistent_resources/${results_file}
     '''
     """
 
@@ -389,10 +390,11 @@ def install_api_uptime_tests() {
     // setup api uptime tests
     sh """
     ssh -o StrictHostKeyChecking=no  root@${host_ip} '''
-    mkdir -p /root/output
-    git clone https://github.com/osic/api_uptime.git
-    cd api_uptime
-    pip install -r requirements.txt
+    mkdir -p \$HOME/output
+    rm -rf \$HOME/api_uptime
+    git clone https://github.com/osic/api_uptime.git \$HOME/api_uptime
+    cd \$HOME/api_uptime
+    pip install --upgrade -r requirements.txt
     '''
     """
 
@@ -406,8 +408,8 @@ def start_api_uptime_tests() {
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo rm -f /usr/api.uptime.stop
-    cd api_uptime/api_uptime
-    python call_test.py -v -d -s nova,swift -o /root/output/api.uptime.out
+    cd \$HOME/api_uptime/api_uptime
+    python call_test.py -v -d -s nova,swift -o \$HOME/output/api.uptime.out
     ''' &
     """
 
@@ -422,6 +424,13 @@ def stop_api_uptime_tests() {
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
     sudo touch /usr/api.uptime.stop
+
+    # Wait up to 10 seconds for the results file gets created by the script
+    x=0
+    while [ \$x -lt 100 -a ! -e \$HOME/output/api.uptime.out ]; do
+        x=$((x+1))
+        sleep .1
+    done
     '''
     """
 
@@ -433,8 +442,9 @@ def setup_parse_persistent_resources(){
 
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    git clone https://github.com/osic/persistent-resources-tests-parse.git /root/persistent-resources-tests-parse
-    pip install /root/persistent-resources-tests-parse/
+    rm -rf \$HOME/root/persistent-resources-tests-parse
+    git clone https://github.com/osic/persistent-resources-tests-parse.git \$HOME/persistent-resources-tests-parse
+    pip install --upgrade /root/persistent-resources-tests-parse/
     '''
     """
 
@@ -446,8 +456,9 @@ def parse_persistent_resources_tests(){
 
     sh """
     ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-    cd /root/subunit/persistent_resources/
-    resource-parse --u . > /root/output/persistent_resource.txt
+    mkdir -p \$HOME/output
+    cd \$HOME/subunit/persistent_resources/
+    resource-parse --u . > \$HOME/output/persistent_resource.txt
     rm *.csv
     '''
     """
@@ -459,8 +470,16 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
     ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ \$HOME
-    scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ \$HOME
+    {    
+        scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ \$HOME
+    } || {
+        echo 'No output directory found.'
+    }
+    {
+        scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/subunit/ \$HOME
+    } || {
+        echo 'No subunit directory found.'
+    }
     '''
     """
 
@@ -468,7 +487,8 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 	    //Pull persistent, during, api, smoke results from onmetal to ES
 	    sh """
             ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-	    elastic-upgrade -u \$HOME/output/api.uptime.out -d \$HOME/output/during_output.txt -p \$HOME/output/persistent_resource.txt -b \$HOME/subunit/smoke/before_upgrade -a \$HOME/subunit/smoke/after_upgrade
+	    elastic-upgrade -u \$HOME/output/api.uptime.out -d \$HOME/output/during.uptime.out -p \$HOME/output/persistent_resource.txt -b \$HOME/subunit/smoke/before_upgrade -a \$HOME/subunit/smoke/after_upgrade
+            elastic-upgrade -s \$HOME/output/nova_status.json,\$HOME/output/swift_status.json,\$HOME/output/keystone_status.json
 	    ''''
 	    """
 	}
@@ -486,7 +506,7 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 def parse_results() {
 
     sh '''
-    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during_output.txt -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
+    elastic-upgrade -u $HOME/output/api.uptime.out -d $HOME/output/during.uptime.out -p $HOME/output/persistent_resource.txt -b $HOME/subunit/smoke/before_upgrade -a $HOME/subunit/smoke/after_upgrade
     elastic-upgrade -s $HOME/output/nova_status.json,$HOME/output/swift_status.json,$HOME/output/keystone_status.json
     '''
 
@@ -500,6 +520,22 @@ def install_parser() {
     git clone https://github.com/osic/elastic-benchmark $HOME/elastic-benchmark
     sudo pip install --upgrade $HOME/elastic-benchmark/
     '''
+
+}
+
+
+def cleanup_test_results() {
+
+    String host_ip = get_onmetal_ip()
+
+    println "Removing previous test results files..."
+    sh """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    find $HOME/subunit ! -name '.*' ! -type d -exec rm -- {} + || echo "No subunit directory found."
+    find $HOME/output ! -name '.*' ! -type d -exec rm -- {} + || echo "No output directory found."
+    '''
+    """
+    println "The environment is clean from previous test results."
 
 }
 

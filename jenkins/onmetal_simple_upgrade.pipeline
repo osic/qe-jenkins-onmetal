@@ -49,6 +49,10 @@ node('onmetal-provisioner') {
     workspace_dir = pwd()
     echo "The workspace directory is ${workspace_dir}"
 
+    // Get the agent IP
+    String provisioner_ip = common.get_server_ip()
+    echo "The IP address of the OnMetal Provisioner is ${provisioner_ip}"
+
     // Download the project repository and paste the Rax key
     git 'https://github.com/osic/qa-jenkins-onmetal.git'
     unstash 'raxpub'
@@ -64,6 +68,9 @@ node('onmetal-provisioner') {
 
     // Add the elasticsearch public key to the deployed onmetal host
     common.add_key_to_server(onmetal_ip, elasticsearch_pkey)
+
+    // Cleanup tests results directories if they exist to avoid causing false results
+    osa.cleanup_test_results()
 
 }
 
