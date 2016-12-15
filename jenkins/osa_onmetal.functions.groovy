@@ -428,7 +428,7 @@ def stop_api_uptime_tests() {
     # Wait up to 10 seconds for the results file gets created by the script
     x=0
     while [ \$x -lt 100 -a ! -e \$HOME/output/api.uptime.out ]; do
-        x=$((x+1))
+        x=\$((x+1))
         sleep .1
     done
     '''
