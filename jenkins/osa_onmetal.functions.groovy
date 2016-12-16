@@ -265,6 +265,24 @@ def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
     }
 }
 
+def bme_rebuild_environment(full=null, redeploy=null) {
+    // ***Requires Params***
+    // full:
+    //    true  - rebuild on-metal environment
+    //    false - remove existing openstack containers and configuration only
+    // redeploy
+    //    true  - redeploy openstack
+    //    false - no redeploy
+
+    if (full == null || redeploy == null){
+      error "Requires specifying rebuild type"
+    }
+    String extra_vars = ""
+    extra_vars = "-e full=${full} -e redeploy=${redeploy}"
+    echo "Rebuilding OSA environment with ${extra_vars}"
+    ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
+}
+
 def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 
     String host_ip = get_onmetal_ip()
