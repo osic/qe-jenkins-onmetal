@@ -190,6 +190,59 @@ def configure_tempest() {
 
 }
 
+def bme_connect_vpn(host=null, user=null, pass=null){
+    // connects vpn on jenkins builder via f5fpc
+    if (!host || !user || !pass){
+        error 'Missing required parameter'
+    }
+    sh """
+    set -x
+    alias f5fpc="/usr/local/bin/f5fpc"
+    function vpn_info() { f5fpc --info | grep -q "Connection Status"; echo \$?; }
+    if [[ \$(vpn_info) -eq 0 ]]; then
+        echo "VPN connection already established"
+    else
+      f5fpc --start --host https://${host}\
+         --user ${user} --password ${pass} --nocheck &
+      test_vpn=0
+      while [[ \$(vpn_info) -ne 0 ]]; do
+        # wait for vpn, up to 20 seconds
+        if [[ \${test_vpn} -gt 20 ]]; then
+          echo "Could not establish VPN"
+          exit 2
+        fi
+        test_vpn=\$(expr \$test_vpn + 1)
+        sleep 1
+      done
+      echo "VPN established"
+    fi
+    """
+}
+
+def bme_disconnect_vpn(){
+  sh """
+  set -x
+  alias f5fpc="/usr/local/bin/f5fpc"
+  function vpn_info() { f5fpc --info | grep -q "Connection Status"; echo \$?; }
+  if [[ \$(vpn_info) -eq 1 ]]; then
+      echo "VPN not connected"
+  else
+    f5fpc --stop &
+    test_vpn=0
+    while [[ \$(vpn_info) -ne 1 ]]; do
+      # wait for vpn, up to 20 seconds
+      if [[ \${test_vpn} -gt 20 ]]; then
+        echo "Error disconnecting VPN"
+        exit 2
+      fi
+      test_vpn=\$(expr \$test_vpn + 1)
+      sleep 1
+    done
+    echo "VPN disconnected"
+  fi
+  """
+}
+
 def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
 
     String extra_vars = ""
@@ -470,7 +523,7 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
     //Pull persistent, during, api, smoke results from onmetal to ES vm
     sh """
     ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
-    {    
+    {
         scp -o StrictHostKeyChecking=no -r root@${host_ip}:/root/output/ \$HOME
     } || {
         echo 'No output directory found.'
