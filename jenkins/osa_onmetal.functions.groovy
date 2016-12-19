@@ -214,6 +214,8 @@ def bme_connect_vpn(host=null, user=null, pass=null){
         test_vpn=\$(expr \$test_vpn + 1)
         sleep 1
       done
+      # adding a sleep to let the connection complete
+      sleep 2
       echo "VPN established"
     fi
     """
