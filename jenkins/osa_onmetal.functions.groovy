@@ -243,7 +243,7 @@ def bme_disconnect_vpn(){
   """
 }
 
-def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
+def bme_run_testsuite(test_name=null, test_type=null, tempest_root=null) {
 
     String extra_vars = ""
     if (test_name != null){
@@ -252,8 +252,8 @@ def bme_run_testsuite(test_name=null, test_type=null, tempest_dir=null) {
     if (test_type != null){
       extra_vars += "-e test_type=${test_type} "
     }
-    if (tempest_dir != null){
-      extra_vars += "-e tempest_dir=${tempest_dir}"
+    if (tempest_root != null){
+      extra_vars += "-e tempest_root=${tempest_root}"
     }
 
     if (extra_vars == "") {
