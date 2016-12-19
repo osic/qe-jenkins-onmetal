@@ -8,7 +8,7 @@
   tasks:
     - name: Full rebuild BME environment
       when: full
-      command: ansible-playbook -i inventory/static-inventory.yml --forks 22 bootstrap_env_osa.yml
+      command: sshpass -p cobbler ansible-playbook -i inventory/static-inventory.yml --forks 22 bootstrap_env_osa.yml --ask-pass -vvv
       args:
         chdir: /opt/osic-ref-impl/playbooks/bootstrap_env
 
