@@ -10,7 +10,7 @@
       when: full
       command: ansible-playbook -i inventory/static-inventory.yml --forks 22 bootstrap_env_osa.yml
       args:
-        chdir: /opt/ops-generic/bootstrap_env
+        chdir: /opt/osic-ref-impl/playbooks/bootstrap_env
 
     - name: Destroy containers
       when: not full
