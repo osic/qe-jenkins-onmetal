@@ -32,6 +32,6 @@
 
     - name: Redeploy OpenStack
       when: redeploy
-      command: openstack-ansible setup-everything.yml --forks 10
+      command: openstack-ansible setup-everything.yml --forks 3
       args:
         chdir: /opt/openstack-ansible/playbooks
