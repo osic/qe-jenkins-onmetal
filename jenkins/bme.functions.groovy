@@ -112,21 +112,16 @@ def rebuild_environment(full=null, redeploy=null) {
     ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
 }
 
-def upgrade_openstack(release = 'stable/ocata', retryflag = 0) {
+def upgrade_openstack(release = 'stable/ocata') {
 
     try {
         // Upgrade OSA to a specific release
         echo "Running the following playbook: upgrade_osa, to upgrade to the following release: ${release}"
         ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
     } catch (err) {
-        // If there is an error, retry on first attempt else stop
-        if (retryflag == 0) {
-            // Retry Upgrade OSA to a specific release
-            upgrade_openstack(release = $(release), retryflag = 1)
-        } else {
-            //stop
-            throw err
-        }
+        echo "Retrying upgrade, failure on first attempt: " + err
+        // Retry Upgrade OSA to a specific release
+        ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
     }
 }
 
