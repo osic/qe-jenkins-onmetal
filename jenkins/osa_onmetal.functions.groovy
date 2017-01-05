@@ -190,101 +190,6 @@ def configure_tempest() {
 
 }
 
-def bme_connect_vpn(host=null, user=null, pass=null){
-    // connects vpn on jenkins builder via f5fpc
-    if (!host || !user || !pass){
-        error 'Missing required parameter'
-    }
-    sh """
-    set -x
-    alias f5fpc="/usr/local/bin/f5fpc"
-    function vpn_info() { f5fpc --info | grep -q "Connection Status"; echo \$?; }
-    if [[ \$(vpn_info) -eq 0 ]]; then
-        echo "VPN connection already established"
-    else
-      f5fpc --start --host https://${host}\
-         --user ${user} --password ${pass} --nocheck &
-      test_vpn=0
-      while [[ \$(vpn_info) -ne 0 ]]; do
-        # wait for vpn, up to 20 seconds
-        if [[ \${test_vpn} -gt 20 ]]; then
-          echo "Could not establish VPN"
-          exit 2
-        fi
-        test_vpn=\$(expr \$test_vpn + 1)
-        sleep 1
-      done
-      # adding a sleep to let the connection complete
-      sleep 2
-      echo "VPN established"
-    fi
-    """
-}
-
-def bme_disconnect_vpn(){
-  sh """
-  set -x
-  alias f5fpc="/usr/local/bin/f5fpc"
-  function vpn_info() { f5fpc --info | grep -q "Connection Status"; echo \$?; }
-  if [[ \$(vpn_info) -eq 1 ]]; then
-      echo "VPN not connected"
-  else
-    f5fpc --stop &
-    test_vpn=0
-    while [[ \$(vpn_info) -ne 1 ]]; do
-      # wait for vpn, up to 20 seconds
-      if [[ \${test_vpn} -gt 20 ]]; then
-        echo "Error disconnecting VPN"
-        exit 2
-      fi
-      test_vpn=\$(expr \$test_vpn + 1)
-      sleep 1
-    done
-    echo "VPN disconnected"
-  fi
-  """
-}
-
-def bme_run_testsuite(test_name=null, test_type=null, tempest_root=null) {
-
-    String extra_vars = ""
-    if (test_name != null){
-      extra_vars += "-e test_name=${test_name} "
-    }
-    if (test_type != null){
-      extra_vars += "-e test_type=${test_type} "
-    }
-    if (tempest_root != null){
-      extra_vars += "-e tempest_root=${tempest_root}"
-    }
-
-    if (extra_vars == "") {
-      echo "Running playbook bme_test_suite.yml with playbook defaults"
-      ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-    } else {
-      echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
-      ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-    }
-}
-
-def bme_rebuild_environment(full=null, redeploy=null) {
-    // ***Requires Params***
-    // full:
-    //    true  - rebuild on-metal environment
-    //    false - remove existing openstack containers and configuration only
-    // redeploy
-    //    true  - redeploy openstack
-    //    false - no redeploy
-
-    if (full == null || redeploy == null){
-      error "Requires specifying rebuild type"
-    }
-    String extra_vars = ""
-    extra_vars = "-e full=${full} -e redeploy=${redeploy}"
-    echo "Rebuilding OSA environment with ${extra_vars}"
-    ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
-}
-
 def run_tempest_smoke_tests(results_file = 'results', elasticsearch_ip = null) {
 
     String host_ip = get_onmetal_ip()
@@ -509,6 +414,7 @@ def stop_api_uptime_tests() {
 
 }
 
+
 def setup_parse_persistent_resources(){
 
     String host_ip = get_onmetal_ip()
@@ -522,6 +428,7 @@ def setup_parse_persistent_resources(){
     """
 
 }
+
 
 def parse_persistent_resources_tests(){
 
@@ -537,6 +444,7 @@ def parse_persistent_resources_tests(){
     """
 
 }
+
 
 def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip) {
 
