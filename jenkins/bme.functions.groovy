@@ -112,7 +112,7 @@ def rebuild_environment(full=null, redeploy=null) {
     ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
 }
 
-def upgrade_openstack(release = 'stable/ocata') {
+def upgrade_openstack(release = 'master') {
 
     try {
         // Upgrade OSA to a specific release
