@@ -112,38 +112,96 @@ def rebuild_environment(full=null, redeploy=null) {
     ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
 }
 
-def bash_upgrade_openstack(release = 'master') {
+def bash_upgrade_openstack(release = 'master', retries=2) {
+    // ***Requires Params ***
+    // release (to upgrade to) - master or stable/ocata
+    // retries - number of times to rerun
+
     String host_ip = get_onmetal_ip()
+    String upgrade_output = ""
+
+    //call upgrade
+    upgrade_output = run_upgrade_return_results(release, host_ip)
+    //take upgrade_output, find out if it's got a failure in it
+    String failure_output = parse_upgrade_results_for_failure(upgrade_output)
+
+    if (failure_output.length() > 0) {
+        // we have fails, rerun upgrade until it suceeds or to retry limit
+        for (int i = 0; i < retries; i++){
+            upgrade_output = run_upgrade_return_results(release, host_ip)
+            failure_ouput = parse_upgrade_results_for_failure(upgrade_output)
+            if (failure_output.length() == 0){
+                break
+            }
+        }
+    }
+
+}
+
+def parse_upgrade_results_for_failure(upgrade_output = null){
+  // Looking for failed output such as:
+  // ******************** failure ********************
+  // The upgrade script has encountered a failure.
+  // Failed on task "rabbitmq-install.yml -e 'rabbitmq_upgrade=true'"
+  // Re-run the run-upgrade.sh script, or
+  // execute the remaining tasks manually:
+  // openstack-ansible rabbitmq-install.yml -e 'rabbitmq_upgrade=true'
+  // openstack-ansible etcd-install.yml
+  // openstack-ansible utility-install.yml
+  // openstack-ansible rsyslog-install.yml
+  // openstack-ansible /opt/openstack-ansible/scripts/upgrade-utilities/playbooks/memcached-flush.yml
+  // openstack-ansible setup-openstack.yml
+  // ******************** failure ********************
+  // * Caveat, this only grabs the first failure block and returns it (assumes all controllers will
+  // either fail the same way, or we're just going to act on any fail the same way)
+  String[] split_output = upgrade_output.split("\n")
+  boolean failure_found = false
+  boolean record = false
+  for (int i = 0; i < split_output.length; i++){
+    if (split_output[i] == "******************** failure ********************"){
+      if (record){
+        // if we're already recording, then we've already found a failure line
+        record = false
+        failure_output = failure_output.trim()
+        break
+      } else {
+        // we haven't started recording, so this is the first failure indicator
+        // set flag to record, and that there is a failure
+        record = true
+        failure_found = true
+      }
+    } else if (record) {
+      // we're recording, so record it
+      failure_output = failure_output.concat(split_output[i] + "\n")
+    }
+  }
+
+  // return failure found, or an empty string
+  if (failure_found){
+    return (failure_output)
+  } else {
+    return ("")
+  }
+
+}
+
+def run_upgrade_return_results(release="master", host_ip="127.0.0.1"){
     String upgrade_output = ""
     String failure_output = ""
 
     upgrade_output = sh returnStdout: true, script: """
-      ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+        ssh -o StrictHostKeyChecking=no root@${host_ip} '''
         cd /opt/openstack-ansible
         git checkout ${release}
+        cd /opt/openstack-ansible/playbooks
         LATEST_TAG=\$(git describe --abbrev=0 --tags)
         git checkout \${LATEST_TAG}
         export TERM=xterm
         export I_REALLY_KNOW_WHAT_I_AM_DOING=true
         bash scripts/run-upgrade.sh 2>&1 || echo "Failed Upgrade"
         '''
-      """
-
-    String[] split_output = upgrade_output.split("\n")
-    boolean record = false
-    for (int i = 0; i < split_output.length; i++){
-      if (split_output[i] == "******************** failure ********************"){
-        if (record){
-          record = false
-          failure_output = failure_output.trim()
-          break
-        } else {
-          record = true
-        }
-      } else if (record) {
-        failure_output = failure_output.concat(split_output[i] + "\n")
-      }
-    }
+    """
+    return upgrade_output
 }
 
 def upgrade_openstack(release = 'master') {
@@ -154,8 +212,6 @@ def upgrade_openstack(release = 'master') {
         ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
     } catch (err) {
         echo "Retrying upgrade, failure on first attempt: " + err
-        echo "Error message: " + err.getMessage()
-        echo "Error StackTrace: " + err.getStackTrace()
         // Retry Upgrade OSA to a specific release
         ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
     }
