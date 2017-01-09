@@ -112,6 +112,40 @@ def rebuild_environment(full=null, redeploy=null) {
     ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
 }
 
+def bash_upgrade_openstack(release = 'master') {
+    String host_ip = get_onmetal_ip()
+    String upgrade_output = ""
+    String failure_output = ""
+
+    upgrade_output = sh returnStdout: true, script: """
+      ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+        cd /opt/openstack-ansible
+        git checkout ${release}
+        LATEST_TAG=\$(git describe --abbrev=0 --tags)
+        git checkout \${LATEST_TAG}
+        export TERM=xterm
+        export I_REALLY_KNOW_WHAT_I_AM_DOING=true
+        bash scripts/run-upgrade.sh 2>&1 || echo "Failed Upgrade"
+        '''
+      """
+
+    String[] split_output = upgrade_output.split("\n")
+    boolean record = false
+    for (int i = 0; i < split_output.length; i++){
+      if (split_output[i] == "******************** failure ********************"){
+        if (record){
+          record = false
+          failure_output = failure_output.trim()
+          break
+        } else {
+          record = true
+        }
+      } else if (record) {
+        failure_output = failure_output.concat(split_output[i] + "\n")
+      }
+    }
+}
+
 def upgrade_openstack(release = 'master') {
 
     try {
