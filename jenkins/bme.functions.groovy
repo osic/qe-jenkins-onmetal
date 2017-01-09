@@ -154,6 +154,8 @@ def upgrade_openstack(release = 'master') {
         ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
     } catch (err) {
         echo "Retrying upgrade, failure on first attempt: " + err
+        echo "Error message: " + err.getMessage()
+        echo "Error StackTrace: " + err.getStackTrace()
         // Retry Upgrade OSA to a specific release
         ansiblePlaybook extras: "-e openstack_release=${release}", inventory: 'hosts', playbook: 'upgrade_osa.yaml', sudoUser: null
     }
