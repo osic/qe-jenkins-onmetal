@@ -42,7 +42,7 @@ def connect_vpn(host=null, user=null, pass=null){
         sleep 1
       done
       # adding a sleep to let the connection complete
-      sleep 2
+      sleep 5
       echo "VPN established"
     fi
     """
