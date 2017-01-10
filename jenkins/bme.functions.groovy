@@ -125,7 +125,8 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
     if (fake_results) {
         upgrade_output = fake_run_upgrade_return_results(release, host_ip)
     } else {
-        upgrade_output = run_upgrade_return_results(release, host_ip)
+        echo "do nothing"
+        //upgrade_output = run_upgrade_return_results(release, host_ip)
     }
     //take upgrade_output, find out if it's got a failure in it
     String failure_output = parse_upgrade_results_for_failure(upgrade_output)
@@ -136,7 +137,8 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
             if (fake_results) {
               upgrade_output = fake_run_upgrade_return_results(release, host_ip)
             } else {
-              upgrade_output = run_upgrade_return_results(release, host_ip)
+              echo "do nothing, testing"
+              //upgrade_output = run_upgrade_return_results(release, host_ip)
             }
             failure_output = parse_upgrade_results_for_failure(upgrade_output)
             if (failure_output.length() == 0 || i >= retries){
