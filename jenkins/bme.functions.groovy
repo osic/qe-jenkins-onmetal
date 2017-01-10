@@ -169,6 +169,7 @@ def fake_run_upgrade_return_results(release='master', retries=2){
         '''
     """
     return upgrade_output
+}
 
 
 def parse_upgrade_results_for_failure(upgrade_output = null){
