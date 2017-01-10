@@ -112,7 +112,7 @@ def rebuild_environment(full=null, redeploy=null) {
     ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
 }
 
-def bash_upgrade_openstack(release = 'master', retries=2) {
+def bash_upgrade_openstack(release='master', retries=2) {
     // ***Requires Params ***
     // release (to upgrade to) - master or stable/ocata
     // retries - number of times to rerun
@@ -120,7 +120,7 @@ def bash_upgrade_openstack(release = 'master', retries=2) {
     String host_ip = get_onmetal_ip()
     String upgrade_output = ""
 
-    //call upgrade
+    //call upgrade, testing while environment not usable
     upgrade_output = run_upgrade_return_results(release, host_ip)
     //take upgrade_output, find out if it's got a failure in it
     String failure_output = parse_upgrade_results_for_failure(upgrade_output)
@@ -130,12 +130,48 @@ def bash_upgrade_openstack(release = 'master', retries=2) {
         for (int i = 0; i < retries; i++){
             upgrade_output = run_upgrade_return_results(release, host_ip)
             failure_ouput = parse_upgrade_results_for_failure(upgrade_output)
-            if (failure_output.length() == 0){
+            if (failure_output.length() == 0 || i >= retries){
                 break
             }
         }
     }
+}
 
+def fake_bash_upgrade_openstack(release='master', retries=2){
+    // Fake test of upgrade while environment isn't available
+    String host_ip = get_onmetal_ip()
+    String upgrade_ouput = ""
+
+    // replace the call to upgrade with just output from a failing script
+    // to prevent the need to change configuration of the deploy host
+    upgrade_output = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+        echo "******************** failure ********************"
+        echo "The upgrade script has encountered a failure."
+        echo 'Failed on task \"rabbitmq-install.yml -e 'rabbitmq_upgrade=true'\"'
+        echo "Re-run the run-upgrade.sh script, or"
+        echo "execute the remaining tasks manually:"
+        echo "openstack-ansible rabbitmq-install.yml -e 'rabbitmq_upgrade=true'"
+        echo "openstack-ansible etcd-install.yml"
+        echo "openstack-ansible utility-install.yml"
+        echo "openstack-ansible rsyslog-install.yml"
+        echo "openstack-ansible /opt/openstack-ansible/scripts/upgrade-utilities/playbooks/memcached-flush.yml"
+        echo "openstack-ansible setup-openstack.yml"
+        echo "******************** failure ********************"
+        bash -c "exit 2" || echo "failed upgrade"
+        '''
+    """
+    String failure_output = parse_upgrade_results_for_failure(upgrade_output)
+    if (failure_output.length() > 0) {
+        // we have fails, rerun upgrade until it suceeds or to retry limit
+        for (int i = 0; i < retries; i++){
+            //upgrade_output = run_upgrade_return_results(release, host_ip)
+            failure_output = parse_upgrade_results_for_failure(upgrade_output)
+            if (failure_output.length() == 0 || i >= retries){
+                break
+            }
+        }
+    }
 }
 
 def parse_upgrade_results_for_failure(upgrade_output = null){
