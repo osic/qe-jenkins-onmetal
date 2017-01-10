@@ -196,36 +196,28 @@ def parse_upgrade_results_for_failure(upgrade_output = null){
   // ******************** failure ********************
   // * Caveat, this only grabs the first failure block and returns it (assumes all controllers will
   // either fail the same way, or we're just going to act on any fail the same way)
-  echo "split"
   split_output = upgrade_output.split("\n")
-  echo "completed split"
   String failure_output = ""
   boolean failure_found = false
   boolean record = false
-  echo "before loop"
   for (int i = 0; i < split_output.size(); i++){
-    echo "in loop"
     if (split_output[i] == "******************** failure ********************"){
       if (record){
         // if we're already recording, then we've already found a failure line
         record = false
-        echo "record to false"
         failure_output = failure_output.trim()
         break
       } else {
         // we haven't started recording, so this is the first failure indicator
         // set flag to record, and that there is a failure
         record = true
-        echo "record to true"
         failure_found = true
       }
     } else if (record) {
       // we're recording, so record it
-      echo "recording"
       failure_output = failure_output + split_output[i] + "\n"
     }
   }
-  echo "after loop"
   // return failure found, or an empty string
   if (failure_found){
     return (failure_output)
