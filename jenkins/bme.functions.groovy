@@ -166,7 +166,7 @@ def fake_bash_upgrade_openstack(release='master', retries=2){
     if (failure_output.length() > 0) {
         // we have fails, rerun upgrade until it suceeds or to retry limit
         for (int i = 0; i < retries; i++){
-            echo "Upgrade failed, retrying #" + String(i)
+            echo "Upgrade failed, retrying #" + i
             //upgrade_output = run_upgrade_return_results(release, host_ip)
             failure_output = parse_upgrade_results_for_failure(upgrade_output)
             if (failure_output.length() == 0){
