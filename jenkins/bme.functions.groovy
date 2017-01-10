@@ -112,23 +112,32 @@ def rebuild_environment(full=null, redeploy=null) {
     ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_rebuild.yaml', sudoUser: null
 }
 
-def bash_upgrade_openstack(release='master', retries=2) {
+def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
     // ***Requires Params ***
     // release (to upgrade to) - master or stable/ocata
     // retries - number of times to rerun
+    // fake_results calls different method to return expected fails for testing
 
     String host_ip = get_onmetal_ip()
     String upgrade_output = ""
 
-    //call upgrade, testing while environment not usable
-    upgrade_output = run_upgrade_return_results(release, host_ip)
+    //call upgrade, fake_results allows testing while environment not usable
+    if (fake_results) {
+        upgrade_output = fake_run_upgrade_return_results(release, host_ip)
+    } else {
+        upgrade_output = run_upgrade_return_results(release, host_ip)
+    }
     //take upgrade_output, find out if it's got a failure in it
     String failure_output = parse_upgrade_results_for_failure(upgrade_output)
 
     if (failure_output.length() > 0) {
         // we have fails, rerun upgrade until it suceeds or to retry limit
         for (int i = 0; i < retries; i++){
-            upgrade_output = run_upgrade_return_results(release, host_ip)
+            if (fake_results) {
+              upgrade_output = fake_run_upgrade_return_results(release, host_ip)
+            } else {
+              upgrade_output = run_upgrade_return_results(release, host_ip)
+            }
             failure_output = parse_upgrade_results_for_failure(upgrade_output)
             if (failure_output.length() == 0 || i >= retries){
                 break
@@ -138,13 +147,9 @@ def bash_upgrade_openstack(release='master', retries=2) {
 }
 
 def fake_bash_upgrade_openstack(release='master', retries=2){
-    // Fake test of upgrade while environment isn't available
-    String host_ip = get_onmetal_ip()
     String upgrade_output = ""
     String failure_output = ""
 
-    // replace the call to upgrade with just output from a failing script
-    // to prevent the need to change configuration of the deploy host
     upgrade_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no root@${host_ip} '''
         echo "******************** failure ********************"
@@ -162,23 +167,8 @@ def fake_bash_upgrade_openstack(release='master', retries=2){
         bash -c "exit 2" || echo "failed upgrade"
         '''
     """
-    failure_output = parse_upgrade_results_for_failure(upgrade_output)
-    if (failure_output.length() > 0) {
-        // we have fails, rerun upgrade until it suceeds or to retry limit
-        for (int i = 0; i < retries; i++){
-            echo "Upgrade failed, retrying #" + i
-            //upgrade_output = run_upgrade_return_results(release, host_ip)
-            failure_output = parse_upgrade_results_for_failure(upgrade_output)
-            if (failure_output.length() == 0){
-                echo "Successful Upgrade"
-                break
-            } else if (i >= retries){
-                echo "Upgrade failed, hit retry limit"
-                break
-            }
-        }
-    }
-}
+    return upgrade_output
+
 
 def parse_upgrade_results_for_failure(upgrade_output = null){
   // Looking for failed output such as:
