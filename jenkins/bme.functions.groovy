@@ -148,7 +148,7 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
     }
 }
 
-def fake_run_upgrade_return_results(release='master', retries=2){
+def fake_run_upgrade_return_results(release='master', host_ip="127.0.0.1"){
     //fakes it
     String upgrade_output = ""
     String failure_output = ""
