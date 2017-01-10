@@ -122,6 +122,7 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
     String upgrade_output = ""
 
     //call upgrade, fake_results allows testing while environment not usable
+    echo "Running upgrade"
     if (fake_results) {
         upgrade_output = fake_run_upgrade_return_results(release, host_ip)
     } else {
@@ -133,15 +134,21 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
 
     if (failure_output.length() > 0) {
         // we have fails, rerun upgrade until it suceeds or to retry limit
+        echo "Upgrade failed"
         for (int i = 0; i < retries; i++){
+            echo "Rerunning upgrade, retry #" + (i + 1)
             if (fake_results) {
-              upgrade_output = fake_run_upgrade_return_results(release, host_ip)
+                upgrade_output = fake_run_upgrade_return_results(release, host_ip)
             } else {
-              echo "do nothing, testing"
-              //upgrade_output = run_upgrade_return_results(release, host_ip)
+                echo "do nothing, testing"
+                //upgrade_output = run_upgrade_return_results(release, host_ip)
             }
             failure_output = parse_upgrade_results_for_failure(upgrade_output)
-            if (failure_output.length() == 0 || i >= retries){
+            if (failure_output.length() == 0){
+                echo "Upgrade succeeded"
+                break
+            } else if (i >= retries){
+                echo "Upgrade failed, exceeded retries"
                 break
             }
         }
