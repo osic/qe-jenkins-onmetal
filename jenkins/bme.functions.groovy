@@ -173,6 +173,24 @@ def fake_run_upgrade_return_results(release='master', host_ip="127.0.0.1"){
     return upgrade_output
 }
 
+def run_upgrade_return_results(release="master", host_ip="127.0.0.1"){
+    String upgrade_output = ""
+    String failure_output = ""
+    
+    upgrade_output = sh returnStdout: true, script: """
+    ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+    cd /opt/openstack-ansible
+    git checkout ${release}
+    cd /opt/openstack-ansible/playbooks
+    LATEST_TAG=\$(git describe --abbrev=0 --tags)
+    git checkout \${LATEST_TAG}
+    export TERM=xterm
+    export I_REALLY_KNOW_WHAT_I_AM_DOING=true
+    bash scripts/run-upgrade.sh 2>&1 || echo "Failed Upgrade"
+    '''
+    """
+    return upgrade_output
+}
 
 def parse_upgrade_results_for_failure(upgrade_output = null){
   // Looking for failed output such as:
@@ -221,24 +239,6 @@ def parse_upgrade_results_for_failure(upgrade_output = null){
 
 }
 
-def run_upgrade_return_results(release="master", host_ip="127.0.0.1"){
-    String upgrade_output = ""
-    String failure_output = ""
-
-    upgrade_output = sh returnStdout: true, script: """
-        ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-        cd /opt/openstack-ansible
-        git checkout ${release}
-        cd /opt/openstack-ansible/playbooks
-        LATEST_TAG=\$(git describe --abbrev=0 --tags)
-        git checkout \${LATEST_TAG}
-        export TERM=xterm
-        export I_REALLY_KNOW_WHAT_I_AM_DOING=true
-        bash scripts/run-upgrade.sh 2>&1 || echo "Failed Upgrade"
-        '''
-    """
-    return upgrade_output
-}
 
 def upgrade_openstack(release = 'master') {
 
