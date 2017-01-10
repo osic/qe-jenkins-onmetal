@@ -196,7 +196,9 @@ def parse_upgrade_results_for_failure(upgrade_output = null){
   // ******************** failure ********************
   // * Caveat, this only grabs the first failure block and returns it (assumes all controllers will
   // either fail the same way, or we're just going to act on any fail the same way)
+  echo "split"
   split_output = upgrade_output.split("\n")
+  echo "completed split"
   String failure_output = ""
   boolean failure_found = false
   boolean record = false
