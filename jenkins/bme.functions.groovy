@@ -141,6 +141,7 @@ def fake_bash_upgrade_openstack(release='master', retries=2){
     // Fake test of upgrade while environment isn't available
     String host_ip = get_onmetal_ip()
     String upgrade_output = ""
+    String failure_output = ""
 
     // replace the call to upgrade with just output from a failing script
     // to prevent the need to change configuration of the deploy host
@@ -161,7 +162,7 @@ def fake_bash_upgrade_openstack(release='master', retries=2){
         bash -c "exit 2" || echo "failed upgrade"
         '''
     """
-    String failure_output = parse_upgrade_results_for_failure(upgrade_output)
+    failure_output = parse_upgrade_results_for_failure(upgrade_output)
     if (failure_output.length() > 0) {
         // we have fails, rerun upgrade until it suceeds or to retry limit
         for (int i = 0; i < retries; i++){
