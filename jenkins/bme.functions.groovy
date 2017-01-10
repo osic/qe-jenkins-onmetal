@@ -146,7 +146,8 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
     }
 }
 
-def fake_bash_upgrade_openstack(release='master', retries=2){
+def fake_run_upgrade_return_results(release='master', retries=2){
+    //fakes it
     String upgrade_output = ""
     String failure_output = ""
 
@@ -164,7 +165,7 @@ def fake_bash_upgrade_openstack(release='master', retries=2){
         echo "openstack-ansible /opt/openstack-ansible/scripts/upgrade-utilities/playbooks/memcached-flush.yml"
         echo "openstack-ansible setup-openstack.yml"
         echo "******************** failure ********************"
-        bash -c "exit 2" || echo "failed upgrade"
+        bash -c "exit 2" || echo "Failed Upgrade"
         '''
     """
     return upgrade_output
