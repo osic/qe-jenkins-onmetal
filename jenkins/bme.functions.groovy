@@ -215,7 +215,7 @@ def parse_upgrade_results_for_failure(upgrade_output = null){
       }
     } else if (record) {
       // we're recording, so record it
-      failure_output = failure_output.concat(split_output[i] + "\n")
+      failure_output = failure_output + split_output[i] + "\n"
     }
   }
 
