@@ -147,9 +147,8 @@ def bash_upgrade_openstack(release='master', retries=2, fake_results=false) {
             if (failure_output.length() == 0){
                 echo "Upgrade succeeded"
                 break
-            } else if (i >= retries){
+            } else if (i == (retries -1)){
                 echo "Upgrade failed, exceeded retries"
-                break
             }
         }
     }
