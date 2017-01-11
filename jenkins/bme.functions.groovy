@@ -34,7 +34,7 @@ def bash_run_tempest_smoke_tests(controller_name='controller01'){
     String deploy_node_ip = get_onmetal_ip(()
     String container_ip = get_controller_utility_container_ip(controller_name)
     tempest_output = sh returnStdout: true, script: """
-        ssh -o StrictHostKeyChecking=no -o ProxyCommand='ssh -W ${host_ip} ${container_ip}' root@${container_ip} '''
+        ssh -o StrictHostKeyChecking=no -o ProxyCommand='ssh -W ${host_ip}:22 ${container_ip}' root@${container_ip} '''
         cd /opt/openstack/tempest_untagged/
         ostestr --regex smoke
         '''
