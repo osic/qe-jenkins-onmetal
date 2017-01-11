@@ -1,21 +1,34 @@
 #!/usr/bin/env groovy
 
 def get_onmetal_ip() {
-
     // Get the onmetal host IP address
     if (fileExists('hosts')) {
 
         String hosts = readFile("hosts")
         String ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
         return (ip)
-
     } else {
 
         return (null)
-
     }
-
 }
+
+def get_controller_utility_container_ip(name='controller01') {
+    // Rather than use all containers, find just one to operate tests
+    String deploy_node_ip = get_onmetal_ip()
+    upgrade_output = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+        cd /etc/openstack_deploy
+        CONTAINER=\$(cat openstack_inventory.json | jq \".utility.hosts\" | grep \"${name}_utility\")
+        CONTAINER=\$(echo \$CONTAINER | sed s/\\\"//g | sed s/\\ //g)
+        IP=\$(cat openstack_inventory.json | jq "._meta.hostvars[\\\""\$CONTAINER"\\\"].ansible_host" -r)
+        echo "IP=\${IP}"
+        '''
+    """
+    String container_ip = upgrade_output.substring(upgrade_output.indexOf('=') +1).trim()
+    return (container_ip)
+}
+
 
 def connect_vpn(host=null, user=null, pass=null){
     // connects vpn on jenkins builder via f5fpc
@@ -187,9 +200,10 @@ def run_upgrade_return_results(release="master", host_ip="127.0.0.1"){
         ssh -o StrictHostKeyChecking=no root@${host_ip} '''
         cd /opt/openstack-ansible
         git checkout ${release}
-        cd /opt/openstack-ansible/playbooks
+        git pull
         LATEST_TAG=\$(git describe --abbrev=0 --tags)
         git checkout \${LATEST_TAG}
+        cd /opt/openstack-ansible/playbooks
         export TERM=xterm
         export I_REALLY_KNOW_WHAT_I_AM_DOING=true
         bash scripts/run-upgrade.sh 2>&1 || echo "Failed Upgrade"
