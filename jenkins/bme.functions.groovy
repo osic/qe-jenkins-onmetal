@@ -15,7 +15,7 @@ def get_onmetal_ip() {
 
 def get_controller_utility_container_ip(controller_name='controller01') {
     // Rather than use all containers, find just one to operate tests
-    String deploy_node_ip = get_onmetal_ip()
+    String host_ip = get_onmetal_ip()
     upgrade_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no root@${host_ip} '''
         cd /etc/openstack_deploy
