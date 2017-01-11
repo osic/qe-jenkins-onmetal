@@ -13,22 +13,34 @@ def get_onmetal_ip() {
     }
 }
 
-def get_controller_utility_container_ip(name='controller01') {
+def get_controller_utility_container_ip(controller_name='controller01') {
     // Rather than use all containers, find just one to operate tests
     String deploy_node_ip = get_onmetal_ip()
     upgrade_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no root@${host_ip} '''
         cd /etc/openstack_deploy
-        CONTAINER=\$(cat openstack_inventory.json | jq \".utility.hosts\" | grep \"${name}_utility\")
+        CONTAINER=\$(cat openstack_inventory.json | jq \".utility.hosts\" | grep \"${controller_name}_utility\")
         CONTAINER=\$(echo \$CONTAINER | sed s/\\\"//g | sed s/\\ //g)
         IP=\$(cat openstack_inventory.json | jq "._meta.hostvars[\\\""\$CONTAINER"\\\"].ansible_host" -r)
         echo "IP=\${IP}"
         '''
     """
+    // quote in a comment to fix editor syntax highlighting '
     String container_ip = upgrade_output.substring(upgrade_output.indexOf('=') +1).trim()
     return (container_ip)
 }
 
+def bash_run_tempest_smoke_tests(controller_name='controller01'){
+    String deploy_node_ip = get_onmetal_ip(()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    tempest_output = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no -o ProxyCommand='ssh -W ${host_ip} ${container_ip}' root@${container_ip} '''
+        cd /opt/openstack/tempest_untagged/
+        ostestr --regex smoke
+        '''
+    """
+    return (tempest_output)
+}
 
 def connect_vpn(host=null, user=null, pass=null){
     // connects vpn on jenkins builder via f5fpc
