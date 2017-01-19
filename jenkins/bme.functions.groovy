@@ -14,13 +14,10 @@ def get_onmetal_ip() {
 
 def setup_ssh_pub_key() {
     String host_ip = get_onmetal_ip()
-    String key_create = ""
-    // create and pass new ssh key
 
-    key_create = sh returnStdout: true, script: """
+    sh """
         scp -o StrictHostKeyChecking=no ~/.ssh/id_rsa.pub root@${host_ip}:/root/temp_ssh_key.pub
     """
-    echo key_create
     // send key to all OS nodes to allow proxy commands
     try {
         sh """
@@ -36,7 +33,6 @@ def setup_ssh_pub_key() {
         echo "Failure passing key, this may not be significant depending on host"
         echo err.message
     }
-
 }
 
 def get_controller_utility_container_ip(controller_name='controller01') {
@@ -44,11 +40,11 @@ def get_controller_utility_container_ip(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     upgrade_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no root@${host_ip} '''
-        cd /etc/openstack_deploy
-        CONTAINER=\$(cat openstack_inventory.json | jq \".utility.hosts\" | grep \"${controller_name}_utility\")
-        CONTAINER=\$(echo \$CONTAINER | sed s/\\\"//g | sed s/\\ //g)
-        IP=\$(cat openstack_inventory.json | jq "._meta.hostvars[\\\""\$CONTAINER"\\\"].ansible_ssh_host" -r)
-        echo "IP=\${IP}"
+            cd /etc/openstack_deploy
+            CONTAINER=\$(cat openstack_inventory.json | jq \".utility.hosts\" | grep \"${controller_name}_utility\")
+            CONTAINER=\$(echo \$CONTAINER | sed s/\\\"//g | sed s/\\ //g)
+            IP=\$(cat openstack_inventory.json | jq "._meta.hostvars[\\\""\$CONTAINER"\\\"].ansible_ssh_host" -r)
+            echo "IP=\${IP}"
         '''
     """
     // quote in a comment to fix editor syntax highlighting '
@@ -56,27 +52,48 @@ def get_controller_utility_container_ip(controller_name='controller01') {
     return (container_ip)
 }
 
+def get_tempest_dir(controller_name='controller01') {
+  String host_ip = get_onmetal_ip()
+  String container_ip = get_controller_utility_container_ip(controller_name)
+  String tempest_dir = ""
+  try {
+      tempest_dir = sh returnStdout: true, script: """
+          ssh -o StrictHostKeyChecking=no\
+          -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+              TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+              echo \$TEMPEST_DIR
+          '''
+      """
+  } catch(err) {
+      echo "Error in determining Tempest location"
+      throw err
+  }
+  return (tempest_dir)
+}
+
 def configure_tempest(controller_name='controller01', regex='smoke'){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = ""
+
+    tempest_dir = get_tempest_dir(controller_name)
+
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            # Find where tempest is located
-            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
-            if [[ -z \$TEMPEST_DIR ]]; then
-                echo "Tempest not installed, exiting"
-                exit 1
-            fi
-            cd \$TEMPEST_DIR
-
+            cd ${tempest_dir}
             # Make sure tempest is installed
             if [[ -z \$(which ostestr 2>/dev/null) ]]; then
                 pip install -r .
                 testr init
                 mkdir subunit
             fi
+        '''
+    """
 
+    results = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             # Make sure etc/tempest.conf exists
             if [[ -f etc/tempest.conf ]]; then
                 mv etc/tempest.conf etc/tempest.conf.orig
@@ -89,7 +106,7 @@ def configure_tempest(controller_name='controller01', regex='smoke'){
                     # overwrite each key in tempest conf to be "key ="
                     sed -ir "s|\$a.*|\$a|g" etc/tempest.conf
                     # get each key from generated tempest conf
-                    b=`cat etc/tempest.conf.orig | grep "\$a"`
+                    b=\$(cat etc/tempest.conf.orig | grep "\$a")
                     # overwrite each key from original to downloaded tempest conf
                     sed -ir "s|\$a|\$b|g" etc/tempest.conf
                 done
@@ -97,20 +114,22 @@ def configure_tempest(controller_name='controller01', regex='smoke'){
                 # On testing, if tempest.conf not populated, this needs to be modified
                 # to create resources and place in tempest.conf
                 echo "No existing tempest.conf"
-                exit 1
             fi
         '''
     """
+    if (results == "No existing tempest.conf"){
+        echo "No existing tempest.conf"
+    }
 }
 
 def bash_run_tempest_smoke_tests(controller_name='controller01', regex='smoke'){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     tempest_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
-            cd \$TEMPEST_DIR
+            cd ${tempest_dir}
             ostestr --regex ${regex}
         '''
     """
@@ -120,12 +139,13 @@ def bash_run_tempest_smoke_tests(controller_name='controller01', regex='smoke'){
 def install_persistent_resources_tests(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // Install Persistent Resources tests on the utility container on ${controller}
     echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            TEMPEST_DIR=${tempest_dir}
             rm -rf \$TEMPEST_DIR/persistent-resources-tests
             git clone https://github.com/osic/persistent-resources-tests.git \$TEMPEST_DIR/persistent-resources-tests
             pip install --upgrade \$TEMPEST_DIR/persistent-resources-tests/
@@ -136,12 +156,13 @@ def install_persistent_resources_tests(controller_name='controller01') {
 def install_persistent_resources_tests_parse(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // Install Persistent Resources tests parse on the utility container on ${controller}
     echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            TEMPEST_DIR=${tempest_dir}
             rm -rf \$TEMPEST_DIR/persistent-resources-tests
             git clone https://github.com/osic/persistent-resources-tests.git \$TEMPEST_DIR/persistent-resources-tests
             pip install --upgrade \$TEMPEST_DIR/persistent-resources-tests/
@@ -152,10 +173,11 @@ def install_persistent_resources_tests_parse(controller_name='controller01') {
 def run_persistent_resources_tests(controller_name='controller01', action='verify', results_file=null){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            TEMPEST_DIR=${tempest_dir}
             cd \$TEMPEST_DIR
             stream_id=\$(cat .testrepository/next-stream)
             ostestr --regex persistent-${action} || echo 'Some persistent resources tests failed.'
@@ -168,12 +190,14 @@ def run_persistent_resources_tests(controller_name='controller01', action='verif
 def install_during_upgrade_tests(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // Install during upgrade tests on the utility container on ${controller}
     echo 'Installing during upgrade test on ${controller}_utility container'
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            mkdir -p /root/output
+            TEMPEST_DIR=${tempest_dir}
+            mkdir -p \$TEMPEST_DIR/output
             git clone https://github.com/osic/rolling-upgrades-during-test
             cd rolling-upgrades-during-test
             pip install -r requirements.txt
@@ -184,13 +208,15 @@ def install_during_upgrade_tests(controller_name='controller01') {
 def start_during_upgrade_test(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // Start during upgrade tests on the utility container on ${controller}
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=${tempest_dir}
             cd rolling-upgrades-during-test
-            python call_test.py -d &
-        '''
+            python call_test.py --daemon --output-file \$TEMPEST_DIR/output
+        ''' &
     """
 }
 
@@ -209,14 +235,16 @@ def stop_during_upgrade_test(controller_name='controller01') {
 def install_api_uptime_tests(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // install api uptime tests on utility container on ${controller}
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            mkdir -p \$HOME/output
-            rm -rf \$HOME/api_uptime
-            git clone https://github.com/osic/api_uptime.git \$HOME/api_uptime
-            cd \$HOME/api_uptime
+            TEMPEST_DIR=${tempest_dir}
+            mkdir -p \$TEMPEST_DIR/output
+            rm -rf \$TEMPEST_DIR/api_uptime
+            git clone https://github.com/osic/api_uptime.git \$TEMPEST_DIR/api_uptime
+            cd \$TEMPEST_DIR/api_uptime
             pip install --upgrade -r requirements.txt
         '''
     """
@@ -225,30 +253,35 @@ def install_api_uptime_tests(controller_name='controller01') {
 def start_api_uptime_tests(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // start api uptime tests on the utility container on ${controller}
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            mkdir -p \$HOME/output
+            TEMPEST_DIR=${tempest_dir}
+            mkdir -p \$TEMPEST_DIR/output
             rm -f /usr/api.uptime.stop
-            cd \$HOME/api_uptime/api_uptime
-            python call_test.py -v -d -s nova,swift -o \$HOME/output/api.uptime.out &
-        '''
+            cd \$TEMPEST_DIR/api_uptime/api_uptime
+            python call_test.py --verbose --daemon --services nova,swift\
+             --output-file \$TEMPEST_DIR/output/api.uptime.out
+        ''' &
     """
 }
 
 def stop_api_uptime_tests(controller_name='controller01') {
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
     // Stop api uptime tests on the utility container on ${controller}
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=${tempest_dir}
             touch /usr/api.uptime.stop
 
             # Wait up to 10 seconds for the results file gets created by the script
             x=0
-            while [ \$x -lt 100 -a ! -e \$HOME/output/api.uptime.out ]; do
+            while [ \$x -lt 100 -a ! -e \$TEMPEST_DIR/output/api.uptime.out ]; do
                 x=\$((x+1))
                 sleep .1
             done
@@ -258,7 +291,6 @@ def stop_api_uptime_tests(controller_name='controller01') {
 
 def install_tempest_tests() {
     String host_ip = get_onmetal_ip()
-    String tempest_install = ""
 
     sh """
         ssh -o StringHostKeyChecking=no root@{host_ip} '''
@@ -270,16 +302,7 @@ def install_tempest_tests() {
 
 def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip, controller_name='controller01') {
     String container_ip = get_controller_utility_container_ip(controller_name)
-    String tempest_dir = ""
-    //
-
-    tempest_dir = sh returnStdout: true, script: """
-        ssh -o StrictHostKeyChecking=no\
-        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
-            echo \$TEMPEST_DIR
-        '''
-    """
+    String tempest_dir = get_tempest_dir(controller_name)
 
     try {
         sh """
@@ -327,6 +350,22 @@ def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip, contro
           '''
       """
     }
+}
+
+def cleanup_test_results(controller_name='controller01') {
+  String host_ip = get_onmetal_ip()
+  String container_ip = get_controller_utility_container_ip(controller_name)
+  tempest_dir = get_tempest_dir(controller_name)
+
+  // Clean up existing tests results
+  sh """
+      ssh -o StrictHostKeyChecking=no\
+      -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+          find ${tempest_dir}/subunit ! -name '.*' ! -type d -exec rm -- {} + || echo "No subunit directory found."
+          find ${tempest_dir}/output ! -name '.*' ! -type d -exec rm -- {} + || echo "No output directory found."
+      '''
+  """
+  echo "Previous test runs removed"
 }
 
 def connect_vpn(host=null, user=null, pass=null){
@@ -382,28 +421,6 @@ def disconnect_vpn(){
     echo "VPN disconnected"
   fi
   """
-}
-
-def run_testsuite(test_name=null, test_type=null, tempest_root=null) {
-
-    String extra_vars = ""
-    if (test_name != null){
-        extra_vars += "-e test_name=${test_name} "
-    }
-    if (test_type != null){
-        extra_vars += "-e test_type=${test_type} "
-    }
-    if (tempest_root != null){
-        extra_vars += "-e tempest_root=${tempest_root}"
-    }
-
-    if (extra_vars == "") {
-        echo "Running playbook bme_test_suite.yml with playbook defaults"
-        ansiblePlaybook inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-    } else {
-        echo "Running playbook bme_test_suite.yml with vars ${extra_vars}"
-        ansiblePlaybook extras: "${extra_vars}", inventory: "hosts", playbook: 'bme_test_suite.yaml', sudoUser: null
-    }
 }
 
 def rebuild_environment(full=null, redeploy=null) {
@@ -557,7 +574,6 @@ def parse_upgrade_results_for_failure(upgrade_output = null){
   }
 
 }
-
 
 def upgrade_openstack(release = 'master') {
 
