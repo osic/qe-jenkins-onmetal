@@ -3,7 +3,6 @@
 def get_onmetal_ip() {
     // Get the onmetal host IP address
     if (fileExists('hosts')) {
-
         String hosts = readFile("hosts")
         String ip = hosts.substring(hosts.indexOf('=')+1).replaceAll("[\n\r]", "")
         return (ip)
@@ -134,6 +133,23 @@ def install_persistent_resources_tests(controller_name='controller01') {
     """
 }
 
+def install_persistent_resources_tests_parse(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // Install Persistent Resources tests parse on the utility container on ${controller}
+    echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            rm -rf \$TEMPEST_DIR/persistent-resources-tests
+            git clone https://github.com/osic/persistent-resources-tests.git \$TEMPEST_DIR/persistent-resources-tests
+            pip install --upgrade \$TEMPEST_DIR/persistent-resources-tests/
+        '''
+    """
+}
+
+
 def run_persistent_resources_tests(controller_name='controller01', action='verify', results_file=null){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
@@ -190,6 +206,57 @@ def stop_during_upgrade_test(controller_name='controller01') {
         '''
     """
 }
+
+def install_api_uptime_tests(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // install api uptime tests on utility container on ${controller}
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            mkdir -p \$HOME/output
+            rm -rf \$HOME/api_uptime
+            git clone https://github.com/osic/api_uptime.git \$HOME/api_uptime
+            cd \$HOME/api_uptime
+            pip install --upgrade -r requirements.txt
+        '''
+    """
+}
+
+def start_api_uptime_tests(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // start api uptime tests on the utility container on ${controller}
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            mkdir -p \$HOME/output
+            sudo rm -f /usr/api.uptime.stop
+            cd \$HOME/api_uptime/api_uptime
+            python call_test.py -v -d -s nova,swift -o \$HOME/output/api.uptime.out &
+        '''
+    """
+}
+
+def stop_api_uptime_tests(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // Stop api uptime tests on the utility container on ${controller}
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            touch /usr/api.uptime.stop
+
+            # Wait up to 10 seconds for the results file gets created by the script
+            x=0
+            while [ \$x -lt 100 -a ! -e \$HOME/output/api.uptime.out ]; do
+                x=\$((x+1))
+                sleep .1
+            done
+        '''
+    """
+}
+
 
 def install_tempest_tests(){
     String host_ip = get_onmetal_ip()
