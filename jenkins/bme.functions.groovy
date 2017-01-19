@@ -13,6 +13,33 @@ def get_onmetal_ip() {
     }
 }
 
+def setup_ssh_pub_key() {
+    String host_ip = get_onmetal_ip()
+    String key_create = ""
+    // create and pass new ssh key
+
+    key_create = sh returnStdout: true, script: """
+        scp -o StrictHostKeyChecking=no ~/.ssh/id_rsa.pub root@${host_ip}:/root/temp_ssh_key.pub
+    """
+    echo key_create
+    // send key to all OS nodes to allow proxy commands
+    try {
+        sh """
+            ssh -o StrictHostKeyChecking=no root@${host_ip} '''
+                PUB_KEY=\$(cat /root/temp_ssh_key.pub)
+                echo \${PUB_KEY} >> /root/.ssh/authorized_keys
+                OSA_DIR=\$(find / -maxdepth 4 -type d -name \"openstack-ansible\")
+                cd \$OSA_DIR/playbooks
+                ansible utility_all -i inventory -m shell -a \"echo \${PUB_KEY} >> /root/.ssh/authorized_keys\"
+            '''
+        """
+    } catch(err) {
+        echo "Failure passing key, this may not be significant depending on host"
+        echo err.message
+    }
+
+}
+
 def get_controller_utility_container_ip(controller_name='controller01') {
     // Rather than use all containers, find just one to operate tests
     String host_ip = get_onmetal_ip()
@@ -21,7 +48,7 @@ def get_controller_utility_container_ip(controller_name='controller01') {
         cd /etc/openstack_deploy
         CONTAINER=\$(cat openstack_inventory.json | jq \".utility.hosts\" | grep \"${controller_name}_utility\")
         CONTAINER=\$(echo \$CONTAINER | sed s/\\\"//g | sed s/\\ //g)
-        IP=\$(cat openstack_inventory.json | jq "._meta.hostvars[\\\""\$CONTAINER"\\\"].ansible_host" -r)
+        IP=\$(cat openstack_inventory.json | jq "._meta.hostvars[\\\""\$CONTAINER"\\\"].ansible_ssh_host" -r)
         echo "IP=\${IP}"
         '''
     """
@@ -30,9 +57,83 @@ def get_controller_utility_container_ip(controller_name='controller01') {
     return (container_ip)
 }
 
-def bash_run_tempest_smoke_tests(controller_name='controller01'){
-    String host_ip = get_onmetal_ip(()
+def configure_tempest(controller_name='controller01', regex='smoke'){
+    String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
+    tempest_output = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            # Find where tempest is located
+            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            if [[ -z \$TEMPEST_DIR ]]; then
+                echo "Tempest not installed, exiting"
+                exit 1
+            fi
+            cd \$TEMPEST_DIR
+
+            # Make sure tempest is installed
+            if [[ -z \$(which ostestr 2>/dev/null) ]]; then
+                pip install -r .
+                testr init
+                mkdir subunit
+            fi
+
+            # Make sure etc/tempest.conf exists
+            if [[ -f etc/tempest.conf ]]; then
+                mv etc/tempest.conf etc/tempest.conf.orig
+                wget https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/tempest.conf -O etc/tempest.conf
+                # tempest.conf exists, overwrite it with required vars
+                keys="admin_password image_ref image_ref_alt uri uri_v3 public_network_id"
+                for key in \$keys
+                do
+                    a="\${key} ="
+                    # overwrite each key in tempest conf to be "key ="
+                    sed -ir "s|\$a.*|\$a|g" etc/tempest.conf
+                    # get each key from generated tempest conf
+                    b=`cat etc/tempest.conf.orig | grep "\$a"`
+                    # overwrite each key from original to downloaded tempest conf
+                    sed -ir "s|\$a|\$b|g" etc/tempest.conf
+                done
+            else
+                # On testing, if tempest.conf not populated, this needs to be modified
+                # to create resources and place in tempest.conf
+                echo "No existing tempest.conf"
+                exit 1
+            fi
+        '''
+    """
+    return (tempest_output)
+}
+
+
+def bash_run_tempest_smoke_tests(controller_name='controller01', regex='smoke'){
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    tempest_output = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            cd \$TEMPEST_DIR
+            ostestr --regex ${regex}
+        '''
+    """
+    return (tempest_output)
+}
+
+def install_tempest_tests(){
+    String host_ip = get_onmetal_ip()
+    String tempest_install = ""
+
+    tempest_install = sh returnStdOut: true, script: """
+        ssh -o StringHostKeyChecking=no root@{host_ip} '''
+        cd /opt/openstack-ansible/playbooks
+        openstack-ansible os-tempest-install.yml
+        '''
+    """
+    return (tempest_install)
+}
+
+def run_tempest_tests(container_name='controller01', regex='smoke'){
     tempest_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no -o ProxyCommand='ssh -W ${host_ip}:22 ${container_ip}' root@${container_ip} '''
         cd /opt/openstack/tempest_untagged/
@@ -40,6 +141,7 @@ def bash_run_tempest_smoke_tests(controller_name='controller01'){
         '''
     """
     return (tempest_output)
+
 }
 
 def connect_vpn(host=null, user=null, pass=null){
