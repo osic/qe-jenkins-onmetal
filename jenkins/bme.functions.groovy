@@ -60,7 +60,7 @@ def get_controller_utility_container_ip(controller_name='controller01') {
 def configure_tempest(controller_name='controller01', regex='smoke'){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
-    tempest_output = sh returnStdout: true, script: """
+    sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             # Find where tempest is located
@@ -102,9 +102,7 @@ def configure_tempest(controller_name='controller01', regex='smoke'){
             fi
         '''
     """
-    return (tempest_output)
 }
-
 
 def bash_run_tempest_smoke_tests(controller_name='controller01', regex='smoke'){
     String host_ip = get_onmetal_ip()
@@ -136,7 +134,6 @@ def install_persistent_resources_tests(controller_name='controller01') {
     """
 }
 
-
 def run_persistent_resources_tests(controller_name='controller01', action='verify', results_file=null){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
@@ -151,31 +148,59 @@ def run_persistent_resources_tests(controller_name='controller01', action='verif
             cp .testrepository/\$stream_id \$TEMPEST_DIR/subunit/persistent_resources/${results_file}
         '''
     """
-    return (tempest_output)
+}
+
+def install_during_upgrade_tests(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // Install during upgrade tests on the utility container on ${controller}
+    echo 'Installing during upgrade test on ${controller}_utility container'
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            mkdir -p /root/output
+            git clone https://github.com/osic/rolling-upgrades-during-test
+            cd rolling-upgrades-during-test
+            pip install -r requirements.txt
+        '''
+    """
+}
+
+def start_during_upgrade_test(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // Start during upgrade tests on the utility container on ${controller}
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            cd rolling-upgrades-during-test
+            python call_test.py -d &
+        '''
+    """
+}
+
+def stop_during_upgrade_test(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // Stop during upgrade tests on the utility container on ${controller}
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            touch /usr/during.uptime.stop
+        '''
+    """
 }
 
 def install_tempest_tests(){
     String host_ip = get_onmetal_ip()
     String tempest_install = ""
 
-    tempest_install = sh returnStdOut: true, script: """
+    sh """
         ssh -o StringHostKeyChecking=no root@{host_ip} '''
         cd /opt/openstack-ansible/playbooks
         openstack-ansible os-tempest-install.yml
         '''
     """
-    return (tempest_install)
-}
-
-def run_tempest_tests(container_name='controller01', regex='smoke'){
-    tempest_output = sh returnStdout: true, script: """
-        ssh -o StrictHostKeyChecking=no -o ProxyCommand='ssh -W ${host_ip}:22 ${container_ip}' root@${container_ip} '''
-        cd /opt/openstack/tempest_untagged/
-        ostestr --regex smoke
-        '''
-    """
-    return (tempest_output)
-
 }
 
 def connect_vpn(host=null, user=null, pass=null){
