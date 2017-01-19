@@ -122,7 +122,7 @@ def configure_tempest(controller_name='controller01', regex='smoke'){
     }
 }
 
-def bash_run_tempest_smoke_tests(controller_name='controller01', regex='smoke'){
+def run_tempest_tests(controller_name='controller01', regex='smoke'){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
     String tempest_dir = get_tempest_dir(controller_name)
