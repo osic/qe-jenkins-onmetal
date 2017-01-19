@@ -149,7 +149,6 @@ def install_persistent_resources_tests_parse(controller_name='controller01') {
     """
 }
 
-
 def run_persistent_resources_tests(controller_name='controller01', action='verify', results_file=null){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
@@ -231,7 +230,7 @@ def start_api_uptime_tests(controller_name='controller01') {
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             mkdir -p \$HOME/output
-            sudo rm -f /usr/api.uptime.stop
+            rm -f /usr/api.uptime.stop
             cd \$HOME/api_uptime/api_uptime
             python call_test.py -v -d -s nova,swift -o \$HOME/output/api.uptime.out &
         '''
@@ -257,8 +256,7 @@ def stop_api_uptime_tests(controller_name='controller01') {
     """
 }
 
-
-def install_tempest_tests(){
+def install_tempest_tests() {
     String host_ip = get_onmetal_ip()
     String tempest_install = ""
 
@@ -268,6 +266,67 @@ def install_tempest_tests(){
         openstack-ansible os-tempest-install.yml
         '''
     """
+}
+
+def aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip, controller_name='controller01') {
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = ""
+    //
+
+    tempest_dir = sh returnStdout: true, script: """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            echo \$TEMPEST_DIR
+        '''
+    """
+
+    try {
+        sh """
+            scp -o StrictHostKeyChecking=no\
+            -o ProxyCommand='ssh -W %h:%p ${host_ip}'\
+            -r root@${container_ip}:${tempest_dir}/output .
+
+            scp -o StrictHostKeyChecking=no\
+            -r output ubuntu@${elasticsearch_ip}:/home/ubuntu/
+        """
+    } catch(err) {
+        echo "Error moving output directory"
+        echo err.message
+    }
+
+    try {
+        sh """
+            scp -o StrictHostKeyChecking=no\
+            -o ProxyCommand='ssh -W %h:%p ${host_ip}'\
+            -r root@${container_ip}:${tempest_dir}/subunit .
+
+            scp -o StrictHostKeyChecking=no\
+            -r output ubuntu@${elasticsearch_ip}:/home/ubuntu/
+        """
+    } catch(err) {
+        echo "No subunit directory found"
+        echo err.message
+    }
+
+    if (results_file == 'after_upgrade'){
+        sh """
+            ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
+                elastic-upgrade -u \$HOME/output/api.uptime.out\
+                -d \$HOME/output/during.uptime.out -p \$HOME/output/persistent_resource.txt\
+                -b \$HOME/subunit/smoke/before_upgrade -a \$HOME/subunit/smoke/after_upgrade
+
+                elastic-upgrade -s \$HOME/output/nova_status.json,\
+                \$HOME/output/swift_status.json,\$HOME/output/keystone_status.json
+            '''
+        """
+    } else {
+      sh """
+          ssh -o StrictHostKeyChecking=no ubuntu@${elasticsearch_ip} '''
+              elastic-upgrade -b \$HOME/subunit/smoke/before_upgrade
+          '''
+      """
+    }
 }
 
 def connect_vpn(host=null, user=null, pass=null){
