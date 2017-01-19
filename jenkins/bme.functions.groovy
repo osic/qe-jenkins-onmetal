@@ -120,6 +120,40 @@ def bash_run_tempest_smoke_tests(controller_name='controller01', regex='smoke'){
     return (tempest_output)
 }
 
+def install_persistent_resources_tests(controller_name='controller01') {
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    // Install Persistent Resources tests on the utility container on ${controller}
+    echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            rm -rf \$TEMPEST_DIR/persistent-resources-tests
+            git clone https://github.com/osic/persistent-resources-tests.git \$TEMPEST_DIR/persistent-resources-tests
+            pip install --upgrade \$TEMPEST_DIR/persistent-resources-tests/
+        '''
+    """
+}
+
+
+def run_persistent_resources_tests(controller_name='controller01', action='verify', results_file=null){
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=\$(find / -maxdepth 4 -type d -name "tempest_untagged")
+            cd \$TEMPEST_DIR
+            stream_id=\$(cat .testrepository/next-stream)
+            ostestr --regex persistent-${action} || echo 'Some persistent resources tests failed.'
+            mkdir -p \$TEMPEST_DIR/subunit/persistent_resources/
+            cp .testrepository/\$stream_id \$TEMPEST_DIR/subunit/persistent_resources/${results_file}
+        '''
+    """
+    return (tempest_output)
+}
+
 def install_tempest_tests(){
     String host_ip = get_onmetal_ip()
     String tempest_install = ""
