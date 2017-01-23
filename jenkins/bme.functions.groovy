@@ -81,7 +81,8 @@ def configure_tempest(controller_name='controller01'){
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            cd ${tempest_dir}
+            TEMPEST_DIR=${tempest_dir}
+            cd \$TEMPEST_DIR
             # Make sure tempest is installed
             if [[ -z \$(which ostestr 2>/dev/null) ]]; then
                 pip install -r .
@@ -95,6 +96,8 @@ def configure_tempest(controller_name='controller01'){
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             # Make sure etc/tempest.conf exists
+            TEMPEST_DIR=${tempest_dir}
+            cd \$TEMPEST_DIR
             if [[ -f etc/tempest.conf ]]; then
                 mv etc/tempest.conf etc/tempest.conf.orig
                 wget https://raw.githubusercontent.com/osic/qa-jenkins-onmetal/master/jenkins/tempest.conf -O etc/tempest.conf
@@ -125,14 +128,16 @@ def configure_tempest(controller_name='controller01'){
 def run_tempest_tests(controller_name='controller01', regex='smoke', results_file = null, elasticsearch_ip = null){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
-    String tempest_dir = get_tempest_dir(controller_name)
     def tempest_output, failures
+
+    String tempest_dir = get_tempest_dir(controller_name)
+
     tempest_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             TEMPEST_DIR=${tempest_dir}
             cd \$TEMPEST_DIR
-            stream_id=$(cat .testrepository/next-stream)
+            stream_id=\$(cat .testrepository/next-stream)
             ostestr --regex ${regex} || echo 'Some smoke tests failed.'
             mkdir -p \$TEMPEST_DIR/subunit/smoke
             cp .testrepository/\$stream_id \$TEMPEST_DIR/subunit/smoke/${results_file}
