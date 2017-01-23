@@ -122,18 +122,38 @@ def configure_tempest(controller_name='controller01'){
     }
 }
 
-def run_tempest_tests(controller_name='controller01', regex='smoke'){
+def run_tempest_tests(controller_name='controller01', regex='smoke', results_file = null, elasticsearch_ip = null){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
     String tempest_dir = get_tempest_dir(controller_name)
+    def tempest_output, failures
     tempest_output = sh returnStdout: true, script: """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
-            cd ${tempest_dir}
-            ostestr --regex ${regex}
+            TEMPEST_DIR=${tempest_dir}
+            cd \$TEMPEST_DIR
+            stream_id=$(cat .testrepository/next-stream)
+            ostestr --regex ${regex} || echo 'Some smoke tests failed.'
+            mkdir -p \$TEMPEST_DIR/subunit/smoke
+            cp .testrepository/\$stream_id \$TEMPEST_DIR/subunit/smoke/${results_file}
         '''
     """
-    return (tempest_output)
+    println tempest_output
+    if (tempest_output.contains('- Failed:') == true) {
+        failures = tempest_output.substring(tempest_output.indexOf('- Failed:') + 10)
+        failures = failures.substring(0,failures.indexOf(newline)).toInteger()
+        if (failures > 1) {
+            println 'Parsing failed smoke'
+                if (elasticsearch_ip != null) {
+                    aggregate_parse_failed_smoke(host_ip, results_file, elasticsearch_ip)
+                }
+            error "${failures} tests from the Tempest smoke tests failed, stopping the pipeline."
+        } else {
+            println 'The Tempest smoke tests were successfull.'
+        }
+    } else {
+        error 'There was an error running the smoke tests, stopping the pipeline.'
+    }
 }
 
 def install_persistent_resources_tests(controller_name='controller01') {
@@ -163,9 +183,9 @@ def install_persistent_resources_tests_parse(controller_name='controller01') {
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             TEMPEST_DIR=${tempest_dir}
-            rm -rf \$TEMPEST_DIR/persistent-resources-tests
-            git clone https://github.com/osic/persistent-resources-tests.git \$TEMPEST_DIR/persistent-resources-tests
-            pip install --upgrade \$TEMPEST_DIR/persistent-resources-tests/
+            rm -rf \$TEMPEST_DIR/persistent-resources-tests-parse
+            git clone https://github.com/osic/persistent-resources-tests-parse.git \$TEMPEST_DIR/persistent-resources-tests-parse
+            pip install --upgrade \$TEMPEST_DIR/persistent-resources-tests-parse/
         '''
     """
 }
@@ -202,7 +222,7 @@ def parse_persistent_resources_tests(controller_name='controller01'){
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
             TEMPEST_DIR=${tempest_dir}
             cd \$TEMPEST_DIR/subunit/persistent_resources/
-            resource-parse --u . > \$HOME/output/persistent_resource.txt
+            resource-parse --u . > \$TEMPEST_DIR/output/persistent_resource.txt
             rm *.csv
         '''
     """
