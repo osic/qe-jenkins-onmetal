@@ -6,7 +6,6 @@ String onmetal_ip, elasticsearch_ip, elasticsearch_pkey
 
 // Jenkins must provide these variables as parameters or the build
 // will fail:
-//  - from_release
 //  - to_release
 //  - rebuild_environment
 //  - redeploy_openstack
