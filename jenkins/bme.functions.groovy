@@ -71,7 +71,7 @@ def get_tempest_dir(controller_name='controller01') {
   return (tempest_dir)
 }
 
-def configure_tempest(controller_name='controller01', regex='smoke'){
+def configure_tempest(controller_name='controller01'){
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
     String tempest_dir = ""
