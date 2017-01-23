@@ -158,7 +158,7 @@ def install_persistent_resources_tests_parse(controller_name='controller01') {
     String container_ip = get_controller_utility_container_ip(controller_name)
     String tempest_dir = get_tempest_dir(controller_name)
     // Install Persistent Resources tests parse on the utility container on ${controller}
-    echo 'Installing Persistent Resources Tempest Plugin on the onMetal host'
+    echo 'Installing Persistent Resources Tempest Plugin'
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
@@ -174,6 +174,11 @@ def run_persistent_resources_tests(controller_name='controller01', action='verif
     String host_ip = get_onmetal_ip()
     String container_ip = get_controller_utility_container_ip(controller_name)
     String tempest_dir = get_tempest_dir(controller_name)
+
+    if (results_file == null) {
+        results_file = action
+    }
+
     sh """
         ssh -o StrictHostKeyChecking=no\
         -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
@@ -183,6 +188,22 @@ def run_persistent_resources_tests(controller_name='controller01', action='verif
             ostestr --regex persistent-${action} || echo 'Some persistent resources tests failed.'
             mkdir -p \$TEMPEST_DIR/subunit/persistent_resources/
             cp .testrepository/\$stream_id \$TEMPEST_DIR/subunit/persistent_resources/${results_file}
+        '''
+    """
+}
+
+def parse_persistent_resources_tests(controller_name='controller01'){
+    String host_ip = get_onmetal_ip()
+    String container_ip = get_controller_utility_container_ip(controller_name)
+    String tempest_dir = get_tempest_dir(controller_name)
+
+    sh """
+        ssh -o StrictHostKeyChecking=no\
+        -o ProxyCommand='ssh -W %h:%p ${host_ip}' root@${container_ip} '''
+            TEMPEST_DIR=${tempest_dir}
+            cd \$TEMPEST_DIR/subunit/persistent_resources/
+            resource-parse --u . > \$HOME/output/persistent_resource.txt
+            rm *.csv
         '''
     """
 }
