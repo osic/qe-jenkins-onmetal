@@ -1,0 +1,37 @@
+---
+- hosts: deploy_node
+  name: Rebuild BME environment
+  vars:
+    full: false
+    redeploy: false
+
+  tasks:
+    - name: Full rebuild BME environment
+      when: full
+      command: sshpass -p cobbler ansible-playbook -i inventory/static-inventory.yml --forks 22 bootstrap_env_osa.yml --ask-pass -vvv
+      args:
+        chdir: /opt/osic-ref-impl/playbooks/bootstrap_env
+
+    - name: Destroy containers
+      when: not full
+      command: openstack-ansible lxc-containers-destroy.yml
+      args:
+        chdir: /opt/openstack-ansible/playbooks
+
+    - name: Remove old OSA inventory
+      when: not full
+      command: rm -f openstack-inventory.json
+      args:
+        chdir: /etc/openstack_deploy
+
+    - name: Remove ansible facts from old run
+      when: not full
+      command: rm -f *
+      args:
+        chdir: /etc/openstack_deploy/ansible_facts
+
+    - name: Redeploy OpenStack
+      when: redeploy
+      command: openstack-ansible setup-everything.yml --forks 3
+      args:
+        chdir: /opt/openstack-ansible/playbooks

@@ -1,0 +1,135 @@
+#!/usr/bin/env groovy
+
+def osa, common, bme
+String workspace_dir
+String onmetal_ip, elasticsearch_ip, elasticsearch_pkey
+
+// Jenkins must provide these variables as parameters or the build
+// will fail:
+//  - to_release
+//  - rebuild_environment
+//  - redeploy_openstack
+//  - controller_name (i.e. controller01) - determines location of utility container to run tests
+
+// *******************************
+stage('Pre-Deployment -- Load Libs'){
+// *******************************
+    node('bme-jenkins-slave-n01') {
+        // Load the external functions using master since the git command
+        // might not be available at the agent yet
+        fileLoader.withGit('https://github.com/dankolbrs/qa-jenkins-onmetal.git', 'master', null, '') {
+            common = fileLoader.load('jenkins/common.groovy');
+            osa = fileLoader.load('jenkins/osa_onmetal.functions.groovy');
+            bme = fileLoader.load('jenkins/bme.functions.groovy');
+        }
+    }
+
+    node('elasticsearch') {
+        echo 'Get the server information'
+        elasticsearch_ip = common.get_server_ip()
+        elasticsearch_pkey = common.get_server_public_key()
+    }
+}
+
+stage('Pre-Deployment -- Configure Network on Jenkins Build Node'){
+    node('bme-jenkins-slave-n01') {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'b4df0136-d403-4e1c-a62b-10d751505d77',
+        usernameVariable: 'CLOUD_USER', passwordVariable: 'CLOUD_PASS']]) {
+            bme.connect_vpn("72.32.87.87", "${CLOUD_USER}", "${CLOUD_PASS}")
+
+            echo 'Configure ansible hosts file for SSH'
+            sh """
+                echo "[deploy_node]" > hosts
+                echo "intelci-node ansible_ssh_host=172.24.0.21 ansible_ssh_user=root" >> hosts
+            """
+            echo 'Configure SSH keys'
+            bme.setup_ssh_pub_key()
+        }
+    }
+}
+
+stage('Deployment -- Rebuild Environment if selected'){
+    node('bme-jenkins-slave-n01'){
+        // env prep
+        if (${rebuild_environment} == false && ${redeploy_openstack == false}) {
+            stage('Skipping rebuild'){
+                echo 'Skipping rebuild environment and redeploy OpenStack.'
+            }
+        } else if (${rebuild_environment} == true && ${redeploy_openstack == true}) {
+            stage('Rebuild environment & redeploy OpenStack.') {
+                bme.rebuild_environment(true, true)
+            }
+        } else if (${rebuild_environment} == false && ${redeploy_openstack == true}) {
+            stage('Skip rebuild environment, redeploy OpenStack'){
+                bme.rebuild_environment(false, true)
+            }
+        }
+    }
+}
+
+stage('Post-Deployment Validation'){
+    node('bme-jenkins-slave-n01'){
+        stage('Install and Configure tempest'){
+            bme.install_tempest_tests(controller_name)
+            bme.configure_tempest(controller_name)
+        }
+        stage('Run Tempest Smoke Tests') {
+            bme.run_tempest_tests(controller_name, 'smoke', 'before_upgrade', elasticsearch_ip)
+        }
+    }
+}
+
+stage('Pre-Upgrade Configuration'){
+    node('bme-jenkins-slave-n01'){
+        bme.install_api_uptime_tests(controller_name)
+        bme.install_during_upgrade_tests(controller_name)
+        bme.install_persistent_resources_tests(controller_name)
+        bme.install_persistent_resources_tests_parse(controller_name)
+        bme.run_persistent_resources_tests(controller_name, 'create', null)
+    }
+}
+
+stage('Upgrade Openstack to ${to_release}'){
+    node('bme-jenkins-slave-n01'){
+        stage('Start Upgrade tests'){
+            bme.start_api_uptime_tests(controller_name)
+            bme.start_during_upgrade_tests(controller_name)
+        }
+        stage('Run Upgrade'){
+           bme.bash_upgrade_openstack(${to_release}, 2, false)
+        }
+        stage('Stop Upgrade tests'){
+            bme.stop_api_uptime_tests(controller_name)
+            bme.stop_during_upgrade_test(controller_name)
+        }
+        stage('Run persistent resources tests'){
+            bme.run_persistent_resources_tests(controller_name, 'verify', null)
+            bme.parse_persistent_resources_tests(controller_name)
+            bme.run_persistent_resources_tests(controller_name, 'clean', null)
+        }
+    }
+}
+
+stage('Post-Upgrade -- Validate Deploy'){
+    node('bme-jenkins-slave-n01'){
+        bme.run_tempest_tests(controller_name, 'smoke', 'after_upgrade', elasticsearch_ip)
+    }
+}
+
+stage('Post-Upgrade -- Reporting'){
+    node('bme-jenkins-slave-n01'){
+        bme.install_persistent_resources_tests_parse(controller_name)
+        bme.parse_persistent_resources_tests(controller_name)
+    }
+    node('elasticsearch'){
+        osa.install_parser()
+        osa.aggregate_results(onmetal_ip)
+        osa.parse_results()
+    }
+}
+
+stage('Complete - Disconnect from VPN'){
+    node('bme-jenkins-slave-n01'){
+        bme.disconnect_vpn()
+    }
+}
